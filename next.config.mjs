@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "avatars.githubusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "storysnap.support-0bf.workers.dev",
+      },
     ],
   },
   output: "standalone",
