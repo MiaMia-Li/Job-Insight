@@ -1,11 +1,11 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-import { SupabaseAdapter } from "@auth/supabase-adapter";
+
 // import Resend from "next-auth/providers/resend";
-import { sendVerificationRequest } from "./lib/email";
-import { redis } from "./lib/redis";
-import { UpstashRedisAdapter } from "@auth/upstash-redis-adapter";
+// import { sendVerificationRequest } from "./lib/email";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
 import LinkedIn from "next-auth/providers/linkedin";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -14,14 +14,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     //   from: `AhaTool <support@ahatool.ai>`,
     //   sendVerificationRequest,
     // }),
-    GitHub,
+    // GitHub,
     Google,
     LinkedIn,
   ],
-  adapter: SupabaseAdapter({
-    url: process.env.SUPABASE_URL,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  }),
+  adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
   },

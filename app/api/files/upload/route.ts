@@ -1,73 +1,65 @@
-import { put } from "@vercel/blob";
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import { getFileContent } from "../../../../lib/parse";
-const FileSchema = z.object({
-  file: z
-    .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "File size should be less than 5MB",
-    })
-    .refine(
-      (file) =>
-        ["image/jpeg", "image/png", "application/pdf"].includes(file.type),
-      {
-        message: "File type should be JPEG, PNG, or PDF",
-      }
-    ),
-});
+import { NextRequest } from "next/server";
 
-export async function POST(request: Request) {
-  //   const session = await auth();
+export const runtime = "edge";
 
-  //   if (!session) {
-  //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  //   }
+// Worker URL 和认证密钥
+const WORKER_URL = "https://storysnap.support-0bf.workers.dev"; // 替换为您的 Worker URL
+const AUTH_KEY_SECRET = process.env.AUTH_KEY_SECRET; // 需要在环境变量中设置
+console.log("--AUTH_KEY_SECRET", AUTH_KEY_SECRET);
 
-  if (request.body === null) {
-    return new Response("Request body is empty", { status: 400 });
+function generateSafeFileName(originalName: string): string {
+  const timestamp = Date.now();
+  const cleanName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
+  return `${timestamp}-${cleanName}`;
+}
+
+export async function PUT(request: NextRequest) {
+  const formData = await request.formData();
+  const file = formData.get("file");
+
+  if (!file || !(file instanceof Blob)) {
+    return Response.json(
+      { status: "error", message: "Valid file is required" },
+      { status: 400 }
+    );
   }
 
+  const safeFileName = generateSafeFileName(file.name);
+
   try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
+    // 创建请求头，添加认证密钥
+    const headers = new Headers({
+      "X-CF-Secret": AUTH_KEY_SECRET ?? "",
+    });
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    // 发送请求到 Worker
+    const workerResponse = await fetch(
+      `${WORKER_URL}/template/${safeFileName}`,
+      {
+        method: "PUT",
+        headers: headers,
+        body: file,
+      }
+    );
+
+    if (!workerResponse.ok) {
+      throw new Error(`Upload failed: ${workerResponse.statusText}`);
     }
 
-    // Get markdown content from the file
-    const { markdown } = await getFileContent(file);
+    // 构建返回的 URL
+    const publicUrl = `${WORKER_URL}/template/${safeFileName}`;
 
-    const validatedFile = FileSchema.safeParse({ file });
-
-    if (!validatedFile.success) {
-      const errorMessage = validatedFile.error.errors
-        .map((error) => error.message)
-        .join(", ");
-
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
-    }
-
-    const filename = file.name;
-    const fileBuffer = await file.arrayBuffer();
-
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
-
-      // Include markdown content in the response
-      return NextResponse.json({
-        ...data,
-        markdown, // Add markdown content here
-      });
-    } catch (error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-    }
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to process request" },
+    return Response.json([
+      {
+        key: file.name,
+        url: publicUrl,
+        type: file.type,
+      },
+    ]);
+  } catch (err) {
+    console.error(err);
+    return Response.json(
+      { status: "error", message: "Upload failed" },
       { status: 500 }
     );
   }

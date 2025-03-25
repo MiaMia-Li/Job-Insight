@@ -13,6 +13,7 @@ import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import UserMenu from "./UserMenu";
 import Image from "next/image";
+import UserLogin from "./UserLogin";
 
 export function Header() {
   const NAV = [
@@ -38,30 +39,38 @@ export function Header() {
   const { theme } = useTheme();
   const { data: session } = useSession();
 
-  const headerWidth = useTransform(scrollY, [0, 100], ["100%", "90%"]);
+  // 增强的动画变换
+  const headerWidth = useTransform(scrollY, [0, 100], ["100%", "94%"]);
   const headerBackground = useTransform(
     scrollY,
     [0, 100],
     theme === "dark"
-      ? ["rgba(13, 13, 23, 0)", "rgba(13, 13, 23, 0.97)"]
-      : ["rgba(252, 252, 255, 0)", "rgba(252, 252, 255, 0.97)"]
+      ? ["rgba(13, 13, 23, 0)", "rgba(13, 13, 23, 0.9)"]
+      : ["rgba(252, 252, 255, 0)", "rgba(252, 252, 255, 0.9)"]
   );
   const headerBlur = useTransform(scrollY, [0, 100], [0, 8]);
+  const headerBorder = useTransform(
+    scrollY,
+    [0, 100],
+    theme === "dark"
+      ? ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.1)"]
+      : ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.1)"]
+  );
   const headerShadow = useTransform(
     scrollY,
     [0, 100],
-    [
-      "none",
-      theme === "dark"
-        ? "0 4px 20px -1px rgba(0, 0, 0, 0.4)"
-        : "0 4px 20px -1px rgba(0, 0, 0, 0.1)",
-    ]
+    ["0px 0px 0px rgba(0, 0, 0, 0)", "0px 4px 20px rgba(0, 0, 0, 0.1)"]
   );
+
   const headerMargin = useTransform(scrollY, [0, 100], [0, 16]);
+  const headerBorderRadius = useTransform(scrollY, [0, 100], ["16px", "28px"]);
+
+  const headerHeight = useTransform(scrollY, [0, 100], ["6rem", "4rem"]);
+  const logoScale = useTransform(scrollY, [0, 100], [1, 0.9]);
 
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => {
-      setIsScrolled(latest > 0);
+      setIsScrolled(latest > 20);
     });
     return () => unsubscribe();
   }, [scrollY]);
@@ -69,44 +78,74 @@ export function Header() {
   return (
     <div className="fixed top-0 z-50 w-full flex justify-center">
       <motion.header
-        className="w-full transition-all duration-200"
+        className="w-full transition-all duration-300 ease-in-out"
         style={{
           width: headerWidth,
           marginTop: headerMargin,
           backgroundColor: headerBackground,
           backdropFilter: `blur(${headerBlur}px)`,
           boxShadow: headerShadow,
+          borderRadius: headerBorderRadius,
+          border: headerBorder,
+          height: headerHeight,
         }}>
         <div
           className={cn(
-            "w-full flex h-16 items-center justify-between px-6 rounded-xl transition-all duration-200",
-            isScrolled && "bg-background/50"
+            "w-full h-full flex items-center justify-between px-6 transition-all duration-300 ease-in-out"
           )}>
           <div className="flex gap-6 items-center">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <Image src="/rocket.png" alt="Logo" height={50} width={50} />
+            <motion.div style={{ scale: logoScale }}>
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="relative">
+                  <Image
+                    src="/rocket.png"
+                    alt="Logo"
+                    height={50}
+                    width={50}
+                    className="transition-transform duration-300 hover:rotate-12"
+                  />
+                  {isScrolled && (
+                    <motion.div
+                      className="absolute -bottom-1 -right-1 w-full h-full rounded-full bg-primary/10"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [0, 1.2, 1] }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  )}
+                </div>
 
-              <span className="font-bold text-xl hidden sm:inline-block">
-                Insight CV
-              </span>
-            </Link>
+                <span
+                  className={cn(
+                    "font-bold text-xl hidden sm:inline-block transition-all duration-300",
+                    isScrolled ? "text-foreground" : "text-foreground"
+                  )}>
+                  Insight CV
+                </span>
+              </Link>
+            </motion.div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
+            {/* <nav className="hidden md:flex items-center gap-6">
               {NAV.map((item) => (
                 <Link
                   key={item.link}
                   href={item.link}
                   className="flex items-center text-sm font-medium relative group px-1 py-2">
                   <span className="flex items-center gap-1.5">
-                    {/* {item.icon} */}
                     {item.label}
                   </span>
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                  <span
+                    className={cn(
+                      "absolute bottom-0 left-0 h-0.5 bg-primary transition-all duration-300",
+                      isScrolled
+                        ? "w-0 group-hover:w-full"
+                        : "w-0 group-hover:w-full"
+                    )}
+                  />
                 </Link>
               ))}
-            </nav>
+            </nav> */}
           </div>
 
           {/* Right Side Actions */}
@@ -114,7 +153,10 @@ export function Header() {
             <Button
               variant="outline"
               size="sm"
-              className="hidden sm:flex items-center gap-2 rounded-full border-muted-foreground/20">
+              className={cn(
+                "hidden sm:flex items-center gap-2 rounded-full border-muted-foreground/20 transition-all duration-300",
+                isScrolled && "bg-background/50 hover:bg-background"
+              )}>
               <Search className="h-3.5 w-3.5" />
               <span className="text-xs">Search templates...</span>
               <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
@@ -122,32 +164,22 @@ export function Header() {
               </kbd>
             </Button>
 
-            {!session?.user?.id ? (
-              <div className="flex items-center gap-2">
-                <Link href="/login">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="font-medium text-sm">
-                    Sign in
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm" className="font-medium text-sm">
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <UserMenu />
-            )}
+            <UserLogin />
 
-            <ThemeButton />
+            <div className="hidden md:flex">
+              <ThemeButton />
+            </div>
 
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "md:hidden transition-all duration-300",
+                    isScrolled && "hover:bg-background/80"
+                  )}>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -157,7 +189,7 @@ export function Header() {
                     <div className="rounded-md bg-primary p-1.5 mr-2">
                       <FileText className="h-5 w-5 text-primary-foreground" />
                     </div>
-                    <span className="font-bold text-xl">ResumeOptimizer</span>
+                    <span className="font-bold text-xl">Insight CV</span>
                   </div>
 
                   <nav className="flex flex-col gap-1 mb-6">

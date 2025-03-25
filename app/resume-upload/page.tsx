@@ -1,672 +1,313 @@
 "use client";
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   Upload,
   FileText,
   File,
   X,
   CheckCircle2,
-  AlertCircle,
   ArrowRight,
-  Download,
   RefreshCw,
   Sparkles,
+  Zap,
+  BarChart,
+  ChevronRight,
+  FileUp,
+  Briefcase,
+  FileCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+// Import components
+import FileUploader from "@/components/resume/FileUploader";
+import JobDescription from "@/components/resume/JobDescription";
+import ResumeAnalysis from "@/components/resume/ResumeAnalysis";
+import { toast } from "sonner";
+import ResumeUploader from "@/components/resume/ResumeUpload";
 
 export default function ResumeUploadPage() {
-  const [file, setFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [processingStage, setProcessingStage] = useState(null);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const router = useRouter();
   const [resumeScore, setResumeScore] = useState(null);
-  const fileInputRef = useRef(null);
 
-  // Handle file drop
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
+  // Job description state
+  const [jobTitle, setJobTitle] = useState("");
+  const [company, setCompany] = useState("");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [currentStep, setCurrentStep] = useState("upload"); // upload, job, analysis
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileUpload(e.dataTransfer.files[0]);
-    }
+  // // Simulate the analysis process
+  // const simulateAnalysis = () => {
+  //   setTimeout(() => {
+  //     setProcessingStage("scoring");
+  //     setTimeout(() => {
+  //       setAnalysisComplete(true);
+  //       setCurrentStep("job");
+  //       setResumeScore({
+  //         overall: 68,
+  //         content: 72,
+  //         keywords: 58,
+  //         format: 75,
+  //         atsCompatibility: 65,
+  //       });
+  //     }, 2000);
+  //   }, 3000);
+  // };
+
+  // Handle job description submission
+  const handleJobDescriptionSubmit = () => {
+    // In a real app, you would send this data to your backend
+    setCurrentStep("analysis");
   };
 
-  // Handle file selection via input
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileUpload(e.target.files[0]);
-    }
+  // Skip job description step
+  const handleSkipJobDescription = () => {
+    setCurrentStep("analysis");
   };
 
-  // Process the uploaded file
-  const handleFileUpload = (file) => {
-    // Check file type
-    const validTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-    ];
-    if (!validTypes.includes(file.type)) {
-      alert("Please upload a valid resume file (PDF, DOC, DOCX, or TXT)");
-      return;
-    }
-
-    setFile(file);
-    simulateUploadAndProcessing();
+  // Navigate to resume optimization page
+  const handleOptimizeResume = () => {
+    router.push("/resume-optimize");
   };
 
-  // Simulate the upload and processing
-  const simulateUploadAndProcessing = () => {
-    // Reset states
-    setUploadProgress(0);
-    setProcessingStage("uploading");
-    setAnalysisComplete(false);
-
-    // Simulate upload progress
-    const uploadInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(uploadInterval);
-          setProcessingStage("analyzing");
-          simulateAnalysis();
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 100);
+  // 处理继续按钮点击事件
+  const handleContinue = () => {
+    setCurrentStep("job");
   };
 
-  // Simulate the analysis process
-  const simulateAnalysis = () => {
-    setTimeout(() => {
-      setProcessingStage("scoring");
-      setTimeout(() => {
-        setAnalysisComplete(true);
-        setResumeScore({
-          overall: 68,
-          content: 72,
-          keywords: 58,
-          format: 75,
-          atsCompatibility: 65,
-        });
-      }, 2000);
-    }, 3000);
+  // 处理文件上传完成事件
+  const handleUploadComplete = (fileUrl: string) => {
+    console.log("File uploaded successfully:", fileUrl);
+    // setResumeFileUrl(fileUrl);
+    // 可以在这里执行其他操作，如保存到全局状态等
   };
 
-  // Handle file removal
-  const handleRemoveFile = () => {
-    setFile(null);
-    setUploadProgress(0);
-    setProcessingStage(null);
-    setAnalysisComplete(false);
-    setResumeScore(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  // Get file icon based on type
-  const getFileIcon = (fileType) => {
-    if (fileType.includes("pdf"))
-      return <File className="h-10 w-10 text-red-500" />;
-    if (fileType.includes("word") || fileType.includes("doc"))
-      return <File className="h-10 w-10 text-blue-500" />;
-    return <File className="h-10 w-10 text-muted-foreground" />;
-  };
-
-  // Format file size
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + " bytes";
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-    else return (bytes / 1048576).toFixed(1) + " MB";
-  };
+  // Step data with illustrations
+  const steps = [
+    {
+      id: "upload",
+      title: "Upload Resume",
+      description:
+        "Upload your resume file to get started with the analysis process.",
+      icon: <FileUp className="h-5 w-5" />,
+      illustration:
+        "https://storysnap.support-0bf.workers.dev/template/1742907411272-Healthy_habit-cuate.png",
+      altText: "Person uploading a resume document",
+    },
+    {
+      id: "job",
+      title: "Job Description",
+      description:
+        "Add job details to see how well your resume matches the position requirements.",
+      icon: <Briefcase className="h-5 w-5" />,
+      illustration:
+        "https://storysnap.support-0bf.workers.dev/template/1742908423844-Running-cuate.png",
+      altText: "Person writing job requirements",
+    },
+    {
+      id: "analysis",
+      title: "Analysis Results",
+      description:
+        "Review your resume score and get personalized optimization recommendations.",
+      icon: <FileCheck className="h-5 w-5" />,
+      illustration:
+        "https://storysnap.support-0bf.workers.dev/template/1742908736275-Finish_line-cuate.png", // Path to your illustration
+      altText: "Chart showing resume analysis results",
+    },
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto max-w-4xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Upload Your Resume
-          </h1>
-          <p className="mt-3 text-muted-foreground">
-            Get instant AI-powered analysis and optimization suggestions
-          </p>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary/5 to-background">
+      <div className="container max-w-7xl mx-auto px-4 py-12 relative z-10">
+        <div className="pb-16 mx-auto pt-20">
+          <ol className="lg:flex items-center justify-center w-full space-y-4 lg:space-y-0 lg:space-x-4">
+            {steps.map((step, index) => {
+              const isActive = currentStep === step.id;
+              const isCompleted =
+                steps.findIndex((s) => s.id === currentStep) > index;
+              const isLast = index === steps.length - 1;
 
-        <div className="grid gap-8 md:grid-cols-5">
-          {/* Left column - Upload area */}
-          <div className="md:col-span-2">
-            <Card className="overflow-hidden">
-              <CardContent className="p-6">
-                {!file ? (
-                  <div
-                    className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
-                      isDragging
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-muted/50 hover:bg-muted"
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDragging(true);
-                    }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}>
-                    <motion.div
-                      animate={{
-                        y: isDragging ? -10 : 0,
-                        scale: isDragging ? 1.05 : 1,
-                      }}
-                      className="mb-4 rounded-full bg-primary/10 p-4 text-primary dark:bg-primary/20">
-                      <Upload className="h-8 w-8" />
-                    </motion.div>
-                    <h3 className="mb-2 text-lg font-semibold text-foreground">
-                      {isDragging
-                        ? "Drop your file here"
-                        : "Upload your resume"}
-                    </h3>
-                    <p className="mb-4 text-center text-sm text-muted-foreground">
-                      Drag and drop your file here, or click to browse
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      <Badge variant="outline">PDF</Badge>
-                      <Badge variant="outline">DOCX</Badge>
-                      <Badge variant="outline">DOC</Badge>
-                      <Badge variant="outline">TXT</Badge>
+              return (
+                <li key={step.id} className="relative">
+                  <a className="flex items-center font-medium w-full">
+                    <span
+                      className={`w-6 h-6 lg:w-8 lg:h-8 rounded-full flex justify-center items-center mr-3 text-sm
+              ${
+                isActive || isCompleted
+                  ? "bg-primary border border-transparent text-white"
+                  : "bg-background border border-border text-foreground"
+              }`}>
+                      {index + 1}
+                    </span>
+                    <div className="block">
+                      <h4
+                        className={`text-base ${
+                          isActive || isCompleted
+                            ? "text-primary"
+                            : "text-foreground"
+                        }`}>
+                        {step.title}
+                      </h4>
                     </div>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.txt"
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-3">
-                        {getFileIcon(file.type)}
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {file.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatFileSize(file.size)}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleRemoveFile}
-                        className="h-8 w-8 rounded-full">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {processingStage && (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium capitalize text-foreground">
-                            {processingStage === "uploading"
-                              ? "Uploading"
-                              : processingStage === "analyzing"
-                              ? "Analyzing content"
-                              : "Calculating score"}
-                          </span>
-                          {analysisComplete ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "linear",
-                              }}>
-                              <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                            </motion.div>
-                          )}
-                        </div>
-                        <Progress value={uploadProgress} className="h-2" />
-
-                        {processingStage === "uploading" && (
-                          <p className="text-xs text-muted-foreground">
-                            Uploading your resume... {uploadProgress}%
-                          </p>
-                        )}
-
-                        {processingStage === "analyzing" && (
-                          <p className="text-xs text-muted-foreground">
-                            Our AI is analyzing your resume content and
-                            structure...
-                          </p>
-                        )}
-
-                        {processingStage === "scoring" && (
-                          <p className="text-xs text-muted-foreground">
-                            Calculating your resume score and generating
-                            recommendations...
-                          </p>
-                        )}
-                      </div>
+                    {!isLast && (
+                      <svg
+                        className={`w-5 h-5 ml-2 sm:ml-4 ${
+                          isActive || isCompleted
+                            ? "stroke-primary"
+                            : "stroke-foreground"
+                        }`}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M5 18L9.67462 13.0607C10.1478 12.5607 10.3844 12.3107 10.3844 12C10.3844 11.6893 10.1478 11.4393 9.67462 10.9393L5 6M12.6608 18L17.3354 13.0607C17.8086 12.5607 18.0452 12.3107 18.0452 12C18.0452 11.6893 17.8086 11.4393 17.3354 10.9393L12.6608 6"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                      </svg>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Additional upload options */}
-            {!file && (
-              <div className="mt-6 space-y-4">
-                <div className="text-center text-sm text-muted-foreground">
-                  Or use one of these options
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" className="w-full">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Google Drive
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Dropbox
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right column - Analysis results */}
-          <div className="md:col-span-3">
-            {!analysisComplete ? (
-              <Card className="h-full">
-                <CardContent className="flex h-full flex-col items-center justify-center p-6">
-                  {!file ? (
-                    <div className="text-center">
-                      <FileText className="mx-auto mb-4 h-16 w-16 text-muted-foreground/50" />
-                      <h3 className="mb-2 text-lg font-semibold text-foreground">
-                        No resume uploaded yet
-                      </h3>
-                      <p className="mb-6 text-muted-foreground">
-                        Upload your resume to get an instant analysis and
-                        optimization suggestions
-                      </p>
-                      <Button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="group">
-                        Upload Resume
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex w-full flex-col items-center justify-center space-y-6">
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="relative h-40 w-40">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <svg className="h-full w-full" viewBox="0 0 100 100">
-                            <circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="8"
-                              className="text-muted/20"
-                            />
-                            <motion.circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="8"
-                              strokeDasharray="283"
-                              strokeDashoffset="283"
-                              className="text-primary"
-                              animate={{
-                                strokeDashoffset:
-                                  processingStage === "uploading"
-                                    ? 283 - (uploadProgress / 100) * 283
-                                    : 0,
-                              }}
-                              transition={{ duration: 0.5, ease: "easeInOut" }}
-                            />
-                          </svg>
-                          <div className="absolute flex flex-col items-center justify-center">
-                            <motion.div
-                              animate={{
-                                rotate:
-                                  processingStage === "analyzing" ||
-                                  processingStage === "scoring"
-                                    ? 360
-                                    : 0,
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "linear",
-                              }}
-                              className={
-                                processingStage === "analyzing" ||
-                                processingStage === "scoring"
-                                  ? "block"
-                                  : "hidden"
-                              }>
-                              <RefreshCw className="h-8 w-8 text-primary" />
-                            </motion.div>
-                            <span
-                              className={`text-2xl font-bold ${
-                                processingStage === "uploading"
-                                  ? "block"
-                                  : "hidden"
-                              }`}>
-                              {uploadProgress}%
-                            </span>
-                          </div>
-                        </div>
-                      </motion.div>
-
-                      <div className="text-center">
-                        <h3 className="mb-2 text-lg font-semibold text-foreground">
-                          {processingStage === "uploading"
-                            ? "Uploading your resume..."
-                            : processingStage === "analyzing"
-                            ? "Analyzing your resume..."
-                            : "Calculating your score..."}
-                        </h3>
-                        <p className="text-muted-foreground">
-                          {processingStage === "uploading"
-                            ? "This will only take a moment"
-                            : processingStage === "analyzing"
-                            ? "Our AI is reviewing your content and structure"
-                            : "Almost there! Generating personalized recommendations"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <AnimatePresence>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="mb-6 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-xl font-bold text-foreground">
-                            Resume Analysis
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            Here's how your resume performs across key metrics
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex h-16 w-16 flex-col items-center justify-center rounded-full border-4 border-primary/20 text-center">
-                                  <span className="text-xl font-bold text-primary">
-                                    {resumeScore.overall}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    / 100
-                                  </span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Your overall resume score</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </div>
-
-                      <Tabs defaultValue="scores" className="w-full">
-                        <TabsList className="mb-4 grid w-full grid-cols-2">
-                          <TabsTrigger value="scores">
-                            Score Breakdown
-                          </TabsTrigger>
-                          <TabsTrigger value="recommendations">
-                            Recommendations
-                          </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="scores" className="space-y-6">
-                          {/* Score metrics */}
-                          <div className="space-y-4">
-                            {[
-                              {
-                                name: "Content Quality",
-                                score: resumeScore.content,
-                                color: "bg-green-500",
-                              },
-                              {
-                                name: "Keyword Optimization",
-                                score: resumeScore.keywords,
-                                color: "bg-amber-500",
-                              },
-                              {
-                                name: "Format & Structure",
-                                score: resumeScore.format,
-                                color: "bg-blue-500",
-                              },
-                              {
-                                name: "ATS Compatibility",
-                                score: resumeScore.atsCompatibility,
-                                color: "bg-purple-500",
-                              },
-                            ].map((metric) => (
-                              <div key={metric.name} className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium text-foreground">
-                                    {metric.name}
-                                  </span>
-                                  <span className="text-sm font-medium text-foreground">
-                                    {metric.score}/100
-                                  </span>
-                                </div>
-                                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                                  <motion.div
-                                    className={`h-full ${metric.color}`}
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${metric.score}%` }}
-                                    transition={{
-                                      duration: 1,
-                                      ease: "easeOut",
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <Separator />
-
-                          <div className="rounded-lg bg-muted p-4">
-                            <div className="flex items-start space-x-3">
-                              <AlertCircle className="mt-0.5 h-5 w-5 text-amber-500" />
-                              <div>
-                                <h4 className="font-medium text-foreground">
-                                  Areas for improvement
-                                </h4>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                  Your resume could use improvement in keyword
-                                  optimization and ATS compatibility. Click
-                                  "Optimize Now" to automatically enhance these
-                                  areas.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent
-                          value="recommendations"
-                          className="space-y-4">
-                          <div className="rounded-lg border border-border p-4">
-                            <h4 className="mb-2 font-medium text-foreground">
-                              Content Recommendations
-                            </h4>
-                            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
-                              <li>
-                                Add more quantifiable achievements to strengthen
-                                impact
-                              </li>
-                              <li>
-                                Expand your skills section with relevant
-                                technical skills
-                              </li>
-                              <li>
-                                Include a brief professional summary at the top
-                              </li>
-                            </ul>
-                          </div>
-
-                          <div className="rounded-lg border border-border p-4">
-                            <h4 className="mb-2 font-medium text-foreground">
-                              Keyword Optimization
-                            </h4>
-                            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
-                              <li>
-                                Add industry-specific keywords like "data
-                                analysis" and "project management"
-                              </li>
-                              <li>
-                                Include relevant certifications and tools you're
-                                familiar with
-                              </li>
-                              <li>
-                                Match keywords from job descriptions you're
-                                targeting
-                              </li>
-                            </ul>
-                          </div>
-
-                          <div className="rounded-lg border border-border p-4">
-                            <h4 className="mb-2 font-medium text-foreground">
-                              Format Improvements
-                            </h4>
-                            <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
-                              <li>
-                                Use consistent formatting for dates and headings
-                              </li>
-                              <li>
-                                Improve readability with better spacing between
-                                sections
-                              </li>
-                              <li>
-                                Ensure your contact information is prominently
-                                displayed
-                              </li>
-                            </ul>
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-
-                      <div className="mt-6 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-                        <Button className="group flex-1" size="lg">
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Optimize Now
-                          <motion.div
-                            className="absolute inset-0 rounded-md bg-white/10"
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{
-                              scale: [0, 1.05, 1],
-                              opacity: [0, 0.5, 0],
-                            }}
-                            transition={{
-                              duration: 1.5,
-                              repeat: Infinity,
-                              repeatDelay: 3,
-                            }}
-                          />
-                        </Button>
-                        <Button variant="outline" size="lg" className="flex-1">
-                          <Download className="mr-2 h-4 w-4" />
-                          Download Report
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </AnimatePresence>
-            )}
-          </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
         </div>
 
-        {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-16">
-          <h2 className="mb-6 text-center text-2xl font-bold text-foreground">
-            Frequently Asked Questions
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <h3 className="mb-2 font-semibold text-foreground">
-                    {faq.question}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{faq.answer}</p>
-                </CardContent>
-              </Card>
-            ))}
+        {/* Main content area with side-by-side layout */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+          {/* Left side - Illustration */}
+          <motion.div
+            key={`illustration-${currentStep}`}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.5 }}
+            className="w-full lg:w-2/5 flex flex-col justify-center items-start sticky top-24 self-start">
+            <div className="mb-2">
+              <h2 className="text-xl font-bold mb-2">
+                {steps.find((s) => s.id === currentStep)?.title}
+              </h2>
+              <p className="text-muted-foreground">
+                {steps.find((s) => s.id === currentStep)?.description}
+              </p>
+            </div>
+            <div className="relative w-full max-w-md aspect-square">
+              <Image
+                src={steps.find((s) => s.id === currentStep)?.illustration}
+                alt={steps.find((s) => s.id === currentStep)?.altText}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </motion.div>
+
+          {/* Right side - Content */}
+          <div className="w-full lg:w-3/5">
+            <AnimatePresence mode="wait">
+              {/* Step 1: Upload Resume */}
+              {currentStep === "upload" && (
+                <motion.div
+                  key="upload-content"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.5 }}>
+                  <ResumeUploader
+                    onUploadComplete={handleUploadComplete}
+                    onContinue={handleContinue}
+                  />
+                </motion.div>
+              )}
+
+              {/* Step 2: Job Description */}
+              {currentStep === "job" && (
+                <motion.div
+                  key="job-content"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.5 }}>
+                  <JobDescription
+                    jobTitle={jobTitle}
+                    setJobTitle={setJobTitle}
+                    company={company}
+                    setCompany={setCompany}
+                    location={location}
+                    setLocation={setLocation}
+                    description={description}
+                    setDescription={setDescription}
+                  />
+
+                  <div className="flex justify-between mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep("upload")}>
+                      Back
+                    </Button>
+                    <div className="space-x-4">
+                      <Button
+                        variant="outline"
+                        onClick={handleSkipJobDescription}>
+                        Skip this step
+                      </Button>
+                      <Button
+                        onClick={handleJobDescriptionSubmit}
+                        disabled={!description.trim()}>
+                        Analyze Match
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 3: Analysis Results */}
+              {currentStep === "analysis" && (
+                <motion.div
+                  key="analysis-content"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.5 }}>
+                  <ResumeAnalysis resumeScore={resumeScore} />
+
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep("job")}>
+                      Back to Job Description
+                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep("upload")}
+                        className="text-muted-foreground">
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Analyze Another Resume
+                      </Button>
+                      <Button
+                        size="lg"
+                        onClick={handleOptimizeResume}
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary">
+                        <Zap className="mr-2 h-5 w-5" />
+                        Optimize My Resume
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 }
-
-const faqs = [
-  {
-    question: "What file formats are supported?",
-    answer:
-      "We support PDF, DOCX, DOC, and TXT file formats for resume uploads. For best results, we recommend using PDF or DOCX formats.",
-  },
-  {
-    question: "How does the AI analyze my resume?",
-    answer:
-      "Our AI scans your resume for content quality, keyword optimization, formatting, and ATS compatibility. It compares your resume against industry standards and job market requirements.",
-  },
-  {
-    question: "Is my resume data secure?",
-    answer:
-      "Yes, we take data security seriously. Your resume is encrypted during transmission and storage. We do not share your personal information with third parties without your consent.",
-  },
-  {
-    question: "How accurate is the resume score?",
-    answer:
-      "Our resume scoring system is based on analysis of thousands of successful resumes and hiring patterns. While no system is perfect, our scores provide a reliable indication of your resume's strengths and weaknesses.",
-  },
-];

@@ -6,6 +6,7 @@ import { Toaster } from "../components/ui/sonner";
 import SessionWrapper from "../components/session-wrapper";
 import { AI } from "./ai";
 import { Header } from "@/components/header/Header";
+import { DotBackground } from "@/components/animation/DotBackground";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,7 +64,9 @@ export default function RootLayout({
           <ThemeProvider attribute="class">
             <AI>
               <Header />
+              {/* <DotBackground color="bg-foreground/50" spacing={24} size={1}> */}
               {children}
+              {/* </DotBackground> */}
               <Toaster />
             </AI>
           </ThemeProvider>

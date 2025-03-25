@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "storysnap.support-0bf.workers.dev",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.jsdelivr.net",
+      },
     ],
   },
   output: "standalone",

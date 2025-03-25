@@ -14,14 +14,21 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { TypewriterEffect } from "@/components/animation/TypewriterEffect";
-import { CountUp } from "@/components/animation/CountUp";
+
+import { InfiniteScroll } from "@/components/animation/InfiniteScroll";
+import { TestimonialCard } from "@/components/home/TestimonialCard";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden dark:bg-background">
       {/* Hero Banner */}
-      <section className="relative bg-gradient-to-r from-primary/10 to-primary/5 py-20 dark:from-primary/5 dark:to-background md:py-28">
+      <section className="relative bg-gradient-to-r from-primary/10 to-primary/5 py-20 dark:from-primary/5 dark:to-background md:py-28 min-h-[100vh] flex flex-col justify-center">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid gap-12 md:grid-cols-2">
             <motion.div
@@ -107,106 +114,143 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="py-24 relative overflow-hidden">
+        <div className="container mx-auto px-6 md:px-8 relative">
           <motion.div
-            className="mb-12 text-center"
+            className="mb-16 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              How It Works
+            <div className="inline-block mb-3 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              Simple Process
+            </div>
+            <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+              Three Steps to <span className="text-primary">Success</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[700px] text-muted-foreground">
-              Three simple steps to optimize your resume and improve your job
-              prospects
+            <p className="mx-auto mt-3 max-w-[600px] text-muted-foreground text-lg">
+              Our streamlined approach helps you optimize your resume and stand
+              out to employers
             </p>
           </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.title}
-                className="relative flex flex-col items-center rounded-lg bg-card p-6 text-center shadow-sm dark:bg-card"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}>
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    {step.icon}
-                  </div>
-                </div>
-                <h3 className="mb-2 text-xl font-bold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="mb-4 text-muted-foreground">{step.description}</p>
-
-                {index < steps.length - 1 && (
-                  <div className="absolute -right-4 top-1/2 hidden -translate-y-1/2 text-primary md:block">
-                    <ChevronRight className="h-8 w-8" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-
           <motion.div
-            className="mt-12 flex justify-center"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.5 }}>
-            <Button size="lg">
-              Start Now
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            transition={{ duration: 0.5 }}>
+            <div className="grid max-w-xl grid-cols-1 gap-x-14 gap-y-16 lg:max-w-none lg:grid-cols-3">
+              <div className="flex flex-col ms-0 md:ms-10">
+                <div className="inline-flex justify-between items-center mb-10">
+                  <img src="/step-1.svg" />
+                  <img src="/arrow.svg" />
+                </div>
+                <div className="flex items-center gap-x-3 font-bold leading-7 text-foreground text-xl">
+                  <Upload className="h-6 w-6" />
+                  Upload Your Resume
+                </div>
+                <div className="mt-4 flex flex-auto flex-col leading-7 text-muted-foreground">
+                  <p className="flex-auto">
+                    Simply upload your current resume in PDF, DOCX, or TXT
+                    format
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col ms-0 md:ms-10">
+                <div className="inline-flex justify-between items-center mb-10">
+                  <img src="/step-2.svg" className="size-24" />
+                  <img
+                    src="/arrow.svg"
+                    className="transform scale-y-[-1] hidden lg:flex"
+                    alt="/"
+                  />
+                </div>
+                <div className="flex items-center gap-x-3 font-bold leading-7 text-foreground text-xl">
+                  <Award className="h-6 w-6" />
+                  Get AI Analysis
+                </div>
+                <div className="mt-4 flex flex-auto flex-col leading-7 text-muted-foreground">
+                  <p className="flex-auto">
+                    Our AI analyzes your resume and provides personalized
+                    recommendations
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col ms-0 md:ms-10">
+                <div className="inline-flex justify-between items-center mb-10">
+                  <img src="/step-3.svg" className="size-24" />
+                </div>
+                <div className="flex items-center gap-x-3 font-bold leading-7 text-foreground text-xl">
+                  <Download className="h-6 w-6" />
+                  Optimize & Download
+                </div>
+                <div className="mt-4 flex flex-auto flex-col leading-7 text-muted-foreground">
+                  <p className="flex-auto">
+                    Apply the suggestions and download your improved resume
+                  </p>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-muted py-20 dark:bg-muted/50">
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="pb-24 relative overflow-hidden">
+        {/* 装饰性元素 */}
+        <div className="absolute top-1/4 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <motion.div
-            className="mb-12 text-center"
+            className="mb-16 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Key Features
+            <div className="inline-block mb-3 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              Powerful Tools
+            </div>
+            <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+              Everything You Need to{" "}
+              <span className="text-primary">Stand Out</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[700px] text-muted-foreground">
-              Powerful tools to help you create the perfect resume
+            <p className="mx-auto mt-3 max-w-[600px] text-muted-foreground text-lg">
+              Intuitive features designed to showcase your professional
+              strengths
             </p>
           </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
-                className="flex flex-col items-center rounded-lg bg-card p-6 text-center shadow-sm transition-all hover:shadow-md dark:bg-card"
+                className="group relative overflow-hidden rounded-xl bg-card/50 backdrop-blur-sm border border-border/50 p-6 transition-all duration-300"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}>
-                <div className="mb-4 rounded-lg bg-primary/10 p-3 text-primary dark:bg-primary/20">
+                whileHover={{ scale: 1.02 }}>
+                <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-primary/10 opacity-50 blur-2xl transition-all duration-300 group-hover:bg-primary/20 group-hover:opacity-100"></div>
+
+                <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
                   {feature.icon}
                 </div>
+
                 <h3 className="mb-2 text-xl font-bold text-foreground">
                   {feature.title}
                 </h3>
-                <p className="mb-4 text-sm text-muted-foreground">
+
+                <p className="mb-5 text-muted-foreground">
                   {feature.description}
                 </p>
-                <Link href={feature.link} className="mt-auto">
-                  <Button variant="ghost" size="sm" className="group">
-                    Learn More
-                    <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
+
+                <Link
+                  href={feature.link}
+                  className="inline-flex items-center text-sm font-medium text-primary transition-all duration-300 group-hover:translate-x-1">
+                  Explore Feature
+                  <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </motion.div>
             ))}
@@ -215,100 +259,97 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="pb-24 relative overflow-hidden">
+        {/* 装饰性背景元素 */}
+        <div className="absolute top-40 left-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
+        <div className="absolute bottom-40 right-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
+
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <motion.div
-            className="mb-12 text-center"
+            className="mb-16 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              What Our Users Say
+            <div className="inline-block mb-3 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              Success Stories
+            </div>
+            <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+              Trusted by <span className="text-primary">Professionals</span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[700px] text-muted-foreground">
-              Success stories from professionals who improved their job
-              prospects
+            <p className="mx-auto mt-3 max-w-[600px] text-muted-foreground text-lg">
+              Real results from people who transformed their career
+              opportunities
             </p>
           </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                className="rounded-lg bg-card p-6 shadow-sm dark:bg-card"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}>
-                <div className="mb-4 flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-5 w-5 fill-amber-400 text-amber-400 dark:fill-amber-300 dark:text-amber-300"
-                    />
-                  ))}
-                </div>
-                <p className="mb-4 italic text-muted-foreground">
-                  "{testimonial.quote}"
-                </p>
-                <div className="flex items-center">
-                  <div className="mr-4 h-12 w-12 overflow-hidden rounded-full bg-muted">
-                    <Image
-                      src={testimonial.avatar}
-                      alt={testimonial.name}
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground">
-                      {testimonial.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.position}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="relative overflow-hidden">
+            {/* 渐变遮罩 */}
+            <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-background to-transparent z-10"></div>
+            <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-background to-transparent z-10"></div>
+
+            <InfiniteScroll speed={2}>
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard
+                  key={testimonial.name}
+                  {...testimonial}
+                  index={index}
+                />
+              ))}
+            </InfiniteScroll>
+
+            <InfiniteScroll direction="right" speed={2}>
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard
+                  key={testimonial.name}
+                  {...testimonial}
+                  index={index}
+                />
+              ))}
+            </InfiniteScroll>
           </div>
         </div>
       </section>
 
-      {/* Partners */}
-      <section className="border-t border-border bg-muted py-12 dark:bg-muted/50">
-        <div className="container mx-auto px-4 md:px-6">
+      {/* FAQ Section */}
+      <section className="pb-24 relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <motion.div
-            className="mb-8 text-center"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            className="mb-16 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}>
-            <h3 className="text-xl font-medium text-muted-foreground">
-              Trusted by leading companies
-            </h3>
+            <div className="inline-block mb-3 px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              Common Questions
+            </div>
+            <h2 className="text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
+              Frequently Asked <span className="text-primary">Questions</span>
+            </h2>
+            <p className="mx-auto mt-3 max-w-[600px] text-muted-foreground">
+              Everything you need to know about optimizing your resume and
+              landing your dream job
+            </p>
           </motion.div>
 
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-8 opacity-70 dark:opacity-50"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 0.7 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}>
-            {partners.map((partner, index) => (
-              <div key={index} className="h-8 w-auto">
-                <Image
-                  src={partner}
-                  alt="Partner logo"
-                  width={120}
-                  height={32}
-                  className="h-full w-auto object-contain dark:invert"
-                />
-              </div>
+          <Accordion
+            type="single"
+            collapsible
+            className="space-y-4 max-w-5xl mx-auto">
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+                className="border rounded-lg px-4 border-primary/30">
+                <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground  pt-2 pb-4">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </motion.div>
+          </Accordion>
         </div>
       </section>
 
@@ -341,12 +382,21 @@ export default function HomePage() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <div className="flex items-center space-x-2">
-                <FileText className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold text-foreground">
-                  ResumeAI
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="relative">
+                  <Image
+                    src="/rocket.png"
+                    alt="Logo"
+                    height={50}
+                    width={50}
+                    className="transition-transform duration-300 hover:rotate-12"
+                  />
+                </div>
+
+                <span className="font-bold text-xl hidden sm:inline-block transition-all duration-300">
+                  Insight CV
                 </span>
-              </div>
+              </Link>
               <p className="mt-4 text-sm text-muted-foreground">
                 AI-powered resume optimization to help you land your dream job
               </p>
@@ -463,26 +513,38 @@ export default function HomePage() {
   );
 }
 
-const steps = [
+const faqs = [
   {
-    icon: <Upload className="h-6 w-6" />,
-    title: "Upload Your Resume",
-    description:
-      "Simply upload your current resume in PDF, DOCX, or TXT format",
+    question: "How does Insight CV optimize my resume?",
+    answer:
+      "Insight CV uses AI to analyze your resume against job descriptions, identifying keyword gaps, suggesting improvements to your content, and reformatting your layout for better readability and ATS compatibility. Our platform provides specific recommendations tailored to your target role and industry.",
   },
   {
-    icon: <Award className="h-6 w-6" />,
-    title: "Get AI Analysis",
-    description:
-      "Our AI analyzes your resume and provides personalized recommendations",
+    question: "Will my resume pass Applicant Tracking Systems (ATS)?",
+    answer:
+      "Yes! Our templates and optimization tools are specifically designed to be ATS-friendly. We ensure proper formatting, appropriate keyword density, and clear section headings that ATS software can easily parse. Our system also performs ATS simulation tests to verify compatibility before you submit applications.",
   },
   {
-    icon: <Download className="h-6 w-6" />,
-    title: "Optimize & Download",
-    description: "Apply the suggestions and download your improved resume",
+    question: "How long does it take to create a resume?",
+    answer:
+      "With Insight CV, you can create a professional resume in as little as 15 minutes. Upload your existing resume for instant optimization, or build from scratch using our guided templates. Our intuitive interface and real-time suggestions streamline the process, saving you hours of formatting and guesswork.",
+  },
+  {
+    question: "Can I create multiple versions of my resume?",
+    answer:
+      "Absolutely! Our platform allows you to create unlimited resume versions tailored to different positions or industries. Store all your versions in your personal dashboard, make quick edits as needed, and track which version you've sent to each employer. This targeted approach significantly increases your interview chances.",
+  },
+  {
+    question: "Is my data secure and private?",
+    answer:
+      "We take data security seriously. All your information is encrypted using industry-standard protocols, and we never share your personal data with third parties without your explicit consent. You maintain complete ownership of your content, and you can delete your data from our servers at any time.",
+  },
+  {
+    question: "Do you offer resume templates for specific industries?",
+    answer:
+      "Yes, we provide a wide range of industry-specific templates optimized for different career fields including technology, healthcare, finance, creative industries, and more. Each template is designed with industry standards in mind and includes relevant section suggestions and formatting appropriate for your field.",
   },
 ];
-
 const features = [
   {
     icon: <FileText className="h-6 w-6" />,
@@ -517,21 +579,56 @@ const testimonials = [
       "ResumeAI helped me identify critical gaps in my resume. After implementing the suggestions, I received interview calls from 3 top companies!",
     name: "Sarah Johnson",
     position: "Software Engineer",
-    avatar: "/testimonial-1.jpg",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_3.png",
   },
   {
     quote:
       "The keyword analysis feature is a game-changer. My resume now perfectly aligns with job descriptions, and I landed my dream job within weeks.",
     name: "Michael Chen",
     position: "Marketing Manager",
-    avatar: "/testimonial-2.jpg",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_5.png",
   },
   {
     quote:
       "As a career changer, I was struggling to highlight my transferable skills. ResumeAI's recommendations helped me showcase my value effectively.",
     name: "Emily Rodriguez",
     position: "Data Analyst",
-    avatar: "/testimonial-3.jpg",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_7.png",
+  },
+  {
+    quote:
+      "The AI-powered feedback on my resume was incredibly detailed and personalized. It felt like having a professional career coach guide me through every section.",
+    name: "David Kim",
+    position: "Product Manager",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_8.png",
+  },
+  {
+    quote:
+      "After 6 months of job searching with no results, I tried ResumeAI. Within two weeks of updating my resume based on the AI suggestions, I received 5 interview invitations!",
+    name: "Jessica Patel",
+    position: "UX Designer",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_9.png",
+  },
+  {
+    quote:
+      "The industry-specific recommendations were spot on. As a healthcare professional, I appreciated how ResumeAI understood the nuances of my field and helped me stand out.",
+    name: "Robert Wilson",
+    position: "Healthcare Administrator",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_10.png",
+  },
+  {
+    quote:
+      "I was skeptical about AI resume tools, but ResumeAI exceeded my expectations. The formatting suggestions made my resume look polished and professional without losing my personal touch.",
+    name: "Olivia Martinez",
+    position: "Financial Analyst",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_11.png",
+  },
+  {
+    quote:
+      "As a recent graduate with limited experience, I was worried about my resume. ResumeAI helped me highlight my academic projects and internships in a way that impressed recruiters.",
+    name: "James Taylor",
+    position: "Junior Developer",
+    avatar: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_12.png",
   },
 ];
 
