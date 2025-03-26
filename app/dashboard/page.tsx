@@ -1193,7 +1193,7 @@ export default function Dashboard() {
           <DialogHeader>
             <DialogTitle>Optimization History</DialogTitle>
             <DialogDescription>
-              Track your resume's improvement over time
+              Track your resume&apos;s improvement over time
             </DialogDescription>
           </DialogHeader>
 

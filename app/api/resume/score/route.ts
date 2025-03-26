@@ -4,9 +4,12 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-//@ts-ignore
-import pdfParse from "pdf-parse";
-import mammoth from "mammoth";
+// 使用动态导入，避免在构建时加载这些模块
+import type { PDFParse } from "pdf-parse";
+import type { Mammoth } from "mammoth";
+
+// 设置为动态路由，避免在构建时执行
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -45,6 +48,8 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(arrayBuffer);
 
       try {
+        // 动态导入 pdf-parse，避免在构建时加载
+        const pdfParse = (await import("pdf-parse")).default;
         const pdfData = await pdfParse(buffer);
         resumeText = pdfData.text;
       } catch (pdfError) {
@@ -65,6 +70,8 @@ export async function POST(req: Request) {
       // 处理Word文档
       const arrayBuffer = await resumeFile.arrayBuffer();
       try {
+        // 动态导入 mammoth，避免在构建时加载
+        const mammoth = await import("mammoth");
         const result = await mammoth.extractRawText({ arrayBuffer });
         resumeText = result.value;
       } catch (docError) {
@@ -191,4 +198,12 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+// 添加一个简单的 GET 处理程序，确保路由在构建时有效
+export async function GET() {
+  return NextResponse.json(
+    { message: "Resume scoring API - use POST method to analyze resumes" },
+    { status: 200 }
+  );
 }

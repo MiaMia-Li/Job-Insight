@@ -964,7 +964,7 @@ export default function ResumeAnalysisPage() {
                 <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
                   Apply optimization suggestions first to see your improved
                   resume. Select suggestions from the Optimization tab and click
-                  "Apply Optimizations".
+                  &quot;Apply Optimizations&quot;.
                 </p>
                 <Button
                   className="mt-6"
@@ -1052,7 +1052,7 @@ export default function ResumeAnalysisPage() {
                               <div>
                                 <h4 className="text-sm font-bold">EDUCATION</h4>
                                 <p className="mt-1 text-sm">
-                                  Bachelor's Degree in Business
+                                  Bachelor&apos;s Degree in Business
                                 </p>
                               </div>
                             </div>
@@ -1137,7 +1137,7 @@ export default function ResumeAnalysisPage() {
                                 </h4>
                                 <div className="mt-1 text-sm rounded-md bg-green-100/50 p-2 dark:bg-green-900/10">
                                   <p>
-                                    Bachelor's Degree in Business
+                                    Bachelor&apos;s Degree in Business
                                     Administration, University of Michigan
                                   </p>
                                   <p>
@@ -1241,7 +1241,8 @@ export default function ResumeAnalysisPage() {
                             <div className="mt-2 space-y-2 text-sm">
                               <div>
                                 <p className="font-medium">
-                                  Bachelor's Degree in Business Administration
+                                  Bachelor&apos;s Degree in Business
+                                  Administration
                                 </p>
                                 <p className="text-muted-foreground">
                                   University of Michigan, 2015

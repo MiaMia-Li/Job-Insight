@@ -131,7 +131,7 @@ const ResumeAnalysis = ({
                       Resume Analysis
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Here's how your resume performs across key metrics
+                      Here&apos;s how your resume performs across key metrics
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -223,8 +223,9 @@ const ResumeAnalysis = ({
                           </h4>
                           <p className="mt-1 text-sm text-muted-foreground">
                             Your resume could use improvement in keyword
-                            optimization and ATS compatibility. Click "Optimize
-                            Now" to automatically enhance these areas.
+                            optimization and ATS compatibility. Click
+                            &quot;Optimize Now&quot; to automatically enhance
+                            these areas.
                           </p>
                         </div>
                       </div>
@@ -255,15 +256,16 @@ const ResumeAnalysis = ({
                       </h4>
                       <ul className="ml-5 list-disc space-y-1 text-sm text-muted-foreground">
                         <li>
-                          Add industry-specific keywords like "data analysis"
-                          and "project management"
+                          Add industry-specific keywords like &quot;data
+                          analysis&quot; and &quot;project management&quot;
                         </li>
                         <li>
-                          Include relevant certifications and tools you're
+                          Include relevant certifications and tools you&apos;re
                           familiar with
                         </li>
                         <li>
-                          Match keywords from job descriptions you're targeting
+                          Match keywords from job descriptions you&apos;re
+                          targeting
                         </li>
                       </ul>
                     </div>

@@ -101,7 +101,7 @@ export default function FileUploader({
 
       <div className="mt-4 text-center text-sm text-muted-foreground">
         <p>
-          Your file will be securely processed. We don't store your resume
+          Your file will be securely processed. We don&#39;t store your resume
           permanently.
         </p>
       </div>

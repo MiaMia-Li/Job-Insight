@@ -139,7 +139,7 @@ const JobDescription = ({
               variants={itemVariants}
               className="text-sm text-muted-foreground">
               Adding a job description helps us analyze how well your resume
-              matches the position you're applying for.
+              matches the position you&apos;re applying for.
             </motion.p>
 
             {/* Paste status message */}

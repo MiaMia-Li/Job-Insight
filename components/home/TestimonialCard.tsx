@@ -38,13 +38,13 @@ export function TestimonialCard({
       {/* 引用内容 */}
       <div className="relative mb-6">
         <div className="absolute -top-2 -left-1 text-4xl text-primary/20 font-serif">
-          "
+          &quot;
         </div>
         <p className="pt-2 text-base text-foreground/90 leading-relaxed">
           {quote}
         </p>
         <div className="absolute -bottom-4 -right-1 text-4xl text-primary/20 font-serif">
-          "
+          &quot;
         </div>
       </div>
 

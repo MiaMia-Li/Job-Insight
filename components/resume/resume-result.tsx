@@ -5,7 +5,6 @@ import { Progress } from "../ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { Button } from "../ui/button";
 import { ChevronRight } from "lucide-react";
-import { resumeData } from "../../lib/test";
 
 interface ResumeData {
   score: number;
@@ -39,7 +38,7 @@ interface ResumeData {
   skills: string[];
 }
 
-export default function ResumeResult({ data }: { data?: ResumeData }) {
+export default function ResumeResult({ data = {} }: { data?: ResumeData }) {
   console.log("--data", data);
   return (
     <div className="space-y-8">
