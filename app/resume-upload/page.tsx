@@ -3,37 +3,27 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
-  Upload,
-  FileText,
-  File,
-  X,
-  CheckCircle2,
-  ArrowRight,
   RefreshCw,
-  Sparkles,
   Zap,
-  BarChart,
   ChevronRight,
   FileUp,
   Briefcase,
   FileCheck,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Import components
-import FileUploader from "@/components/resume/FileUploader";
 import JobDescription from "@/components/resume/JobDescription";
 import ResumeAnalysis from "@/components/resume/ResumeAnalysis";
-import { toast } from "sonner";
 import ResumeUploader from "@/components/resume/ResumeUpload";
+import { toast } from "sonner";
 
 export default function ResumeUploadPage() {
   const router = useRouter();
-  const [resumeScore, setResumeScore] = useState(null);
+  const [resumeScore, setResumeScore] = useState<any>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   // Job description state
   const [jobTitle, setJobTitle] = useState("");
@@ -42,33 +32,124 @@ export default function ResumeUploadPage() {
   const [description, setDescription] = useState("");
   const [currentStep, setCurrentStep] = useState("upload"); // upload, job, analysis
 
-  // // Simulate the analysis process
-  // const simulateAnalysis = () => {
-  //   setTimeout(() => {
-  //     setProcessingStage("scoring");
-  //     setTimeout(() => {
-  //       setAnalysisComplete(true);
-  //       setCurrentStep("job");
-  //       setResumeScore({
-  //         overall: 68,
-  //         content: 72,
-  //         keywords: 58,
-  //         format: 75,
-  //         atsCompatibility: 65,
-  //       });
-  //     }, 2000);
-  //   }, 3000);
-  // };
+  // Handle job description submission with API call
+  const handleJobDescriptionSubmit = async () => {
+    if (!resumeFile) {
+      toast("Resume required");
+      setCurrentStep("upload");
+      return;
+    }
 
-  // Handle job description submission
-  const handleJobDescriptionSubmit = () => {
-    // In a real app, you would send this data to your backend
-    setCurrentStep("analysis");
+    setIsLoading(true);
+
+    try {
+      // Create form data to send resume file and job details
+      const formData = new FormData();
+      formData.append("resume", resumeFile);
+      formData.append("jobTitle", jobTitle);
+      formData.append("company", company);
+      formData.append("location", location);
+      formData.append("description", description);
+
+      const response = await fetch("/api/resume/score", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to analyze resume");
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      let decoder = new TextDecoder();
+      let result = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          result += chunk;
+
+          try {
+            // Try to parse the accumulated JSON
+            const parsedData = JSON.parse(result);
+            setResumeScore(parsedData);
+            setCurrentStep("analysis");
+          } catch (e) {
+            // If parsing fails, continue accumulating chunks
+            continue;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error analyzing resume:", error);
+      toast("Analysis failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Skip job description step
-  const handleSkipJobDescription = () => {
-    setCurrentStep("analysis");
+  // Skip job description step with API call (simpler analysis)
+  const handleSkipJobDescription = async () => {
+    if (!resumeFile) {
+      toast("Resume required");
+      setCurrentStep("upload");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Create form data with just the resume
+      const formData = new FormData();
+      formData.append("resume", resumeFile);
+      // Indicate this is a basic analysis without job description
+      formData.append("analysisType", "basic");
+
+      const response = await fetch("/api/resume/score", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to analyze resume");
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      let decoder = new TextDecoder();
+      let result = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          result += chunk;
+
+          try {
+            // Try to parse the accumulated JSON
+            const parsedData = JSON.parse(result);
+            setResumeScore(parsedData);
+            setCurrentStep("analysis");
+          } catch (e) {
+            // If parsing fails, continue accumulating chunks
+            continue;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error analyzing resume:", error);
+      toast("Analysis failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Navigate to resume optimization page
@@ -77,20 +158,15 @@ export default function ResumeUploadPage() {
   };
 
   // 处理继续按钮点击事件
-  const handleContinue = () => {
+  const handleContinue = (file: File) => {
+    setResumeFile(file);
     setCurrentStep("job");
-  };
-
-  // 处理文件上传完成事件
-  const handleUploadComplete = (fileUrl: string) => {
-    console.log("File uploaded successfully:", fileUrl);
-    // setResumeFileUrl(fileUrl);
-    // 可以在这里执行其他操作，如保存到全局状态等
   };
 
   // Step data with illustrations
   const steps = [
     {
+      emoji: "📃",
       id: "upload",
       title: "Upload Resume",
       description:
@@ -101,6 +177,7 @@ export default function ResumeUploadPage() {
       altText: "Person uploading a resume document",
     },
     {
+      emoji: "💼",
       id: "job",
       title: "Job Description",
       description:
@@ -111,6 +188,7 @@ export default function ResumeUploadPage() {
       altText: "Person writing job requirements",
     },
     {
+      emoji: "🧐",
       id: "analysis",
       title: "Analysis Results",
       description:
@@ -123,10 +201,10 @@ export default function ResumeUploadPage() {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary/5 to-background">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary/5 via-primary/3 to-background dark:from-black/90 dark:via-black/95 dark:to-black">
       <div className="container max-w-7xl mx-auto px-4 py-12 relative z-10">
-        <div className="pb-16 mx-auto pt-20">
-          <ol className="lg:flex items-center justify-center w-full space-y-4 lg:space-y-0 lg:space-x-4">
+        <div className="pb-16 pt-16">
+          <ol className="flex flex-col lg:flex-row items-center w-full space-y-4 lg:space-y-0 lg:space-x-0">
             {steps.map((step, index) => {
               const isActive = currentStep === step.id;
               const isCompleted =
@@ -134,34 +212,59 @@ export default function ResumeUploadPage() {
               const isLast = index === steps.length - 1;
 
               return (
-                <li key={step.id} className="relative">
-                  <a className="flex items-center font-medium w-full">
+                <li key={step.id} className="flex-1 w-full">
+                  <a
+                    className={`flex items-center font-medium pr-4 w-full rounded-lg transition-all duration-500 relative overflow-hidden hover:shadow-md ${
+                      isActive || isCompleted
+                        ? "bg-primary/10 hover:bg-primary/15"
+                        : "bg-secondary-foreground/5 hover:bg-secondary-foreground/10"
+                    }`}>
                     <span
-                      className={`w-6 h-6 lg:w-8 lg:h-8 rounded-full flex justify-center items-center mr-3 text-sm
-              ${
-                isActive || isCompleted
-                  ? "bg-primary border border-transparent text-white"
-                  : "bg-background border border-border text-foreground"
-              }`}>
-                      {index + 1}
+                      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex justify-center items-center mr-3 text-sm
+                      transition-all duration-300 relative z-10 group
+                      ${
+                        isActive
+                          ? "bg-primary text-white"
+                          : isCompleted
+                          ? "bg-primary/20 border border-primary text-primary"
+                          : "bg-muted border border-border text-muted-foreground"
+                      }`}>
+                      {isCompleted ? (
+                        <svg
+                          className="w-5 h-5 animate-check-mark"
+                          viewBox="0 0 20 20"
+                          fill="currentColor">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <span
+                          className={isActive ? "animate-number-bounce" : ""}>
+                          {index + 1}
+                        </span>
+                      )}
                     </span>
-                    <div className="block">
-                      <h4
-                        className={`text-base ${
-                          isActive || isCompleted
-                            ? "text-primary"
-                            : "text-foreground"
-                        }`}>
-                        {step.title}
-                      </h4>
-                    </div>
+                    <h4
+                      className={`text-base transition-colors duration-300 ${
+                        isActive
+                          ? "text-primary font-medium"
+                          : isCompleted
+                          ? "text-primary/80"
+                          : "text-foreground"
+                      }`}>
+                      {step.title}
+                    </h4>
+
                     {!isLast && (
                       <svg
-                        className={`w-5 h-5 ml-2 sm:ml-4 ${
+                        className={`hidden lg:block w-5 h-5 ml-auto transition-all duration-300 ${
                           isActive || isCompleted
                             ? "stroke-primary"
-                            : "stroke-foreground"
-                        }`}
+                            : "stroke-muted-foreground"
+                        } ${isActive ? "animate-arrow-pulse" : ""}`}
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -180,8 +283,21 @@ export default function ResumeUploadPage() {
           </ol>
         </div>
 
+        {/* Loading overlay */}
+        {isLoading && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-card p-6 rounded-lg shadow-lg flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <h3 className="text-lg font-medium">Analyzing your resume...</h3>
+              <p className="text-muted-foreground text-sm mt-2">
+                This may take a moment
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Main content area with side-by-side layout */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
           {/* Left side - Illustration */}
           <motion.div
             key={`illustration-${currentStep}`}
@@ -190,20 +306,12 @@ export default function ResumeUploadPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
             className="w-full lg:w-2/5 flex flex-col justify-center items-start sticky top-24 self-start">
-            <div className="mb-2">
-              <h2 className="text-xl font-bold mb-2">
-                {steps.find((s) => s.id === currentStep)?.title}
-              </h2>
-              <p className="text-muted-foreground">
-                {steps.find((s) => s.id === currentStep)?.description}
-              </p>
-            </div>
             <div className="relative w-full max-w-md aspect-square">
               <Image
                 src={steps.find((s) => s.id === currentStep)?.illustration}
                 alt={steps.find((s) => s.id === currentStep)?.altText}
-                fill
                 className="object-contain"
+                fill
                 priority
               />
             </div>
@@ -220,10 +328,7 @@ export default function ResumeUploadPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.5 }}>
-                  <ResumeUploader
-                    onUploadComplete={handleUploadComplete}
-                    onContinue={handleContinue}
-                  />
+                  <ResumeUploader onContinue={handleContinue} />
                 </motion.div>
               )}
 
@@ -255,12 +360,13 @@ export default function ResumeUploadPage() {
                     <div className="space-x-4">
                       <Button
                         variant="outline"
-                        onClick={handleSkipJobDescription}>
+                        onClick={handleSkipJobDescription}
+                        disabled={isLoading}>
                         Skip this step
                       </Button>
                       <Button
                         onClick={handleJobDescriptionSubmit}
-                        disabled={!description.trim()}>
+                        disabled={!description.trim() || isLoading}>
                         Analyze Match
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>

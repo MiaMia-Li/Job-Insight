@@ -40,7 +40,7 @@ export default function HomePage() {
                 Optimize Your Resume,{" "}
                 <span className="text-primary">Boost Your Career</span>
               </h1>
-              <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed">
+              <p className="max-w-[600px] md:text-xl/relaxed">
                 Get personalized AI-powered resume analysis and recommendations
                 to stand out in your job search
               </p>
@@ -54,6 +54,40 @@ export default function HomePage() {
                 <Button variant="outline" size="lg">
                   Learn How It Works
                 </Button>
+              </div>
+              <div className="flex md:flex-row md:gap-2 flex-col">
+                <div className="flex -space-x-3">
+                  {[
+                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80", // 专业女性
+                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80", // 年轻男性
+                    "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80", // 商务女性
+                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80", // 微笑男性
+                    "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80", // 年轻女性
+                    "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80", // 技术男性
+                  ].map((i) => (
+                    <div
+                      key={i}
+                      className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-background">
+                      <Image
+                        src={i}
+                        alt={`User`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ))}
+                  {/* <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-background bg-primary text-xs font-medium text-primary-foreground">
+                    +2K
+                  </div> */}
+                </div>
+                <div>
+                  <div className="flex text-yellow-400">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} className="h-5 w-5 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-sm">Trusted by thousands of job seekers</p>
+                </div>
               </div>
             </motion.div>
             <motion.div

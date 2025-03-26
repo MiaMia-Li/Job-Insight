@@ -61,15 +61,19 @@ export default function RootLayout({
           <link rel="manifest" href="/site.webmanifest" />
         </head>
         <body className={inter.className}>
-          <ThemeProvider attribute="class">
-            <AI>
-              <Header />
-              {/* <DotBackground color="bg-foreground/50" spacing={24} size={1}> */}
-              {children}
-              {/* </DotBackground> */}
-              <Toaster />
-            </AI>
-          </ThemeProvider>
+          <div className="background-grid">
+            <div className="content-container">
+              <ThemeProvider attribute="class">
+                <AI>
+                  <Header />
+
+                  {children}
+
+                  <Toaster />
+                </AI>
+              </ThemeProvider>
+            </div>
+          </div>
         </body>
       </html>
     </SessionWrapper>

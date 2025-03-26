@@ -15,6 +15,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+
+  files         File[]          // 添加这一行，建立与 File 的关系
   // Optional for WebAuthn support
   Authenticator Authenticator[]
  
@@ -75,4 +77,29 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  
   @@id([userId, credentialID])
+}
+
+model File {
+  id          String   @id @default(cuid())  // 改为 String 类型，与 User.id 保持一致
+  filename    String   // 文件名
+  originalName String  // 原始文件名
+  path        String   // 存储路径
+  mimetype    String   // 文件类型
+  size        Int      // 文件大小（字节）
+  extension   String?  // 文件扩展名
+  isPublic    Boolean  @default(false) // 是否公开访问
+  uploadedAt  DateTime @default(now()) // 上传时间
+  updatedAt   DateTime @updatedAt      // 更新时间
+  
+  // 关联到上传用户 - 修改为 String 类型
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  // 可选：添加其他元数据字段
+  description String?  // 文件描述
+  tags        String?  // 标签，可以用逗号分隔
+  
+  // 索引
+  @@index([userId])
+  @@map("files") // 表名映射
 }
