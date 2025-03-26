@@ -92,7 +92,7 @@ export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
     };
 
     fetchUserFiles();
-  }, [file]);
+  }, []);
 
   // File handling functions
   const handleDragOver = (e: React.DragEvent) => {

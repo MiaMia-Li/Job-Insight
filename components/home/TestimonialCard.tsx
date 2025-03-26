@@ -23,7 +23,7 @@ export function TestimonialCard({
 }: TestimonialCardProps) {
   return (
     <motion.div
-      className="w-96 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50 p-6 mx-3 transition-all duration-300 hover:border-primary group"
+      className="flex-shrink-0 w-[300px] p-6 bg-card/50 backdrop-blur-sm rounded-xl border border-border group"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -40,7 +40,7 @@ export function TestimonialCard({
         <div className="absolute -top-2 -left-1 text-4xl text-primary/20 font-serif">
           &quot;
         </div>
-        <p className="pt-2 text-base text-foreground/90 leading-relaxed">
+        <p className="pt-2 text-sm text-foreground/90 leading-relaxed">
           {quote}
         </p>
         <div className="absolute -bottom-4 -right-1 text-4xl text-primary/20 font-serif">

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-import { InfiniteScroll } from "@/components/animation/InfiniteScroll";
+import InfiniteScroll from "@/components/animation/InfiniteScroll";
 import { TestimonialCard } from "@/components/home/TestimonialCard";
 import {
   Accordion,
@@ -293,11 +293,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="pb-24 relative overflow-hidden">
-        {/* 装饰性背景元素 */}
-        <div className="absolute top-40 left-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
-        <div className="absolute bottom-40 right-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl"></div>
-
+      <section className="relative overflow-hidden">
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <motion.div
             className="mb-16 text-center"
@@ -316,34 +312,34 @@ export default function HomePage() {
               opportunities
             </p>
           </motion.div>
-
-          <div className="relative overflow-hidden">
-            {/* 渐变遮罩 */}
-            <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-background to-transparent z-10"></div>
-            <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-background to-transparent z-10"></div>
-
-            <InfiniteScroll speed={2}>
-              {testimonials.map((testimonial, index) => (
-                <TestimonialCard
-                  key={testimonial.name}
-                  {...testimonial}
-                  index={index}
-                />
-              ))}
-            </InfiniteScroll>
-
-            <InfiniteScroll direction="right" speed={2}>
-              {testimonials.map((testimonial, index) => (
-                <TestimonialCard
-                  key={testimonial.name}
-                  {...testimonial}
-                  index={index}
-                />
-              ))}
-            </InfiniteScroll>
-          </div>
         </div>
       </section>
+
+      <div className="relative pb-24">
+        {/* 渐变遮罩 */}
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10" />
+
+        <InfiniteScroll>
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard
+              key={testimonial.name}
+              {...testimonial}
+              index={index}
+            />
+          ))}
+        </InfiniteScroll>
+
+        <InfiniteScroll direction="right">
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard
+              key={testimonial.name}
+              {...testimonial}
+              index={index}
+            />
+          ))}
+        </InfiniteScroll>
+      </div>
 
       {/* FAQ Section */}
       <section className="pb-24 relative overflow-hidden">
