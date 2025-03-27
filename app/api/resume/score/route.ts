@@ -4,9 +4,7 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-//@ts-ignore
-import pdfParse from "pdf-parse";
-import mammoth from "mammoth";
+import { getFileContent } from "@/lib/parase";
 
 // 定义基本分析结果的schema
 const basicAnalysisSchema = z.object({
@@ -47,6 +45,8 @@ export async function POST(req: Request) {
     const description = formData.get("description") as string;
     const analysisType = formData.get("analysisType") as string;
 
+    console.log("--resumeFile", resumeFile);
+
     if (!resumeFile) {
       return NextResponse.json(
         { message: "Resume file is required" },
@@ -54,60 +54,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 获取文件类型
-    // const fileType = resumeFile.type;
-    // let resumeText = "";
-
-    // // 根据文件类型选择不同的解析方法
-    // if (fileType === "application/pdf") {
-    //   // 处理PDF文件
-    //   const arrayBuffer = await resumeFile.arrayBuffer();
-    //   const buffer = Buffer.from(arrayBuffer);
-
-    //   try {
-    //     const pdfData = await pdfParse(buffer);
-    //     resumeText = pdfData.text;
-    //   } catch (pdfError) {
-    //     console.error("Error parsing PDF:", pdfError);
-    //     return NextResponse.json(
-    //       {
-    //         message:
-    //           "Unable to parse PDF file. Please ensure it's not password protected and contains extractable text.",
-    //       },
-    //       { status: 400 }
-    //     );
-    //   }
-    // } else if (
-    //   fileType === "application/msword" ||
-    //   fileType ===
-    //     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    // ) {
-    //   // 处理Word文档
-    //   const arrayBuffer = await resumeFile.arrayBuffer();
-    //   try {
-    //     const result = await mammoth.extractRawText({ arrayBuffer });
-    //     resumeText = result.value;
-    //   } catch (docError) {
-    //     console.error("Error parsing Word document:", docError);
-    //     return NextResponse.json(
-    //       { message: "Unable to parse Word document." },
-    //       { status: 400 }
-    //     );
-    //   }
-    // } else if (fileType === "text/plain") {
-    //   // 处理纯文本文件
-    //   resumeText = await resumeFile.text();
-    // } else {
-    //   return NextResponse.json(
-    //     {
-    //       message: `Unsupported file type: ${fileType}. Please upload a PDF or text file.`,
-    //     },
-    //     { status: 400 }
-    //   );
-    // }
-
-    let resumeText =
-      "MengYao Li+ Singapore, 149456 # sept.miamia@gmail.com  +65-80849936ð MengYao LiLanguages: JavaScript, TypeScriptFrameworks: Monorepo, ReactJS, VueJS, NextJS, NodeJS";
+    const content = await getFileContent(resumeFile);
+    let resumeText = content.markdown;
 
     // 检查解析后的文本是否为空或过短
     if (!resumeText || resumeText.trim().length < 50) {

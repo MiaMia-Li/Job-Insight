@@ -1,10 +1,9 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   RefreshCw,
-  Zap,
   ChevronRight,
   FileUp,
   Briefcase,
@@ -163,24 +162,24 @@ export default function ResumeUploadPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary/5 via-primary/3 to-background dark:from-black/90 dark:via-black/95 dark:to-black">
       <div className="container max-w-7xl mx-auto px-4 py-12 relative z-10">
-        <div className="pb-16 pt-16">
-          <ol className="flex flex-col lg:flex-row items-center w-full space-y-4 lg:space-y-0 lg:space-x-0">
-            {steps.map((step, index) => {
-              const isActive = currentStep === step.id;
-              const isCompleted =
-                steps.findIndex((s) => s.id === currentStep) > index;
-              const isLast = index === steps.length - 1;
+        {/* <div className="pb-16 pt-16"> */}
+        {/* <ol className="flex flex-col items-center w-full space-y-4">
+              {steps.map((step, index) => {
+                const isActive = currentStep === step.id;
+                const isCompleted =
+                  steps.findIndex((s) => s.id === currentStep) > index;
+                const isLast = index === steps.length - 1;
 
-              return (
-                <li key={step.id} className="flex-1 w-full">
-                  <a
-                    className={`flex items-center font-medium pr-4 w-full rounded-lg transition-all duration-500 relative overflow-hidden hover:shadow-md ${
-                      isActive || isCompleted
-                        ? "bg-primary/10 hover:bg-primary/15"
-                        : "bg-secondary-foreground/5 hover:bg-secondary-foreground/10"
-                    }`}>
-                    <span
-                      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex justify-center items-center mr-3 text-sm
+                return (
+                  <li key={step.id} className="flex-1 w-full">
+                    <a
+                      className={`flex items-center font-medium pr-4 w-full rounded-lg transition-all duration-500 relative overflow-hidden hover:shadow-md ${
+                        isActive || isCompleted
+                          ? "bg-primary/10 hover:bg-primary/15"
+                          : "bg-secondary-foreground/5 hover:bg-secondary-foreground/10"
+                      }`}>
+                      <span
+                        className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex justify-center items-center mr-3 text-sm
                       transition-all duration-300 relative z-10 group
                       ${
                         isActive
@@ -189,59 +188,59 @@ export default function ResumeUploadPage() {
                           ? "bg-primary/20 border border-primary text-primary"
                           : "bg-muted border border-border text-muted-foreground"
                       }`}>
-                      {isCompleted ? (
+                        {isCompleted ? (
+                          <svg
+                            className="w-5 h-5 animate-check-mark"
+                            viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        ) : (
+                          <span
+                            className={isActive ? "animate-number-bounce" : ""}>
+                            {index + 1}
+                          </span>
+                        )}
+                      </span>
+                      <h4
+                        className={`text-base transition-colors duration-300 ${
+                          isActive
+                            ? "text-primary font-medium"
+                            : isCompleted
+                            ? "text-primary/80"
+                            : "text-foreground"
+                        }`}>
+                        {step.title}
+                      </h4>
+
+                      {!isLast && (
                         <svg
-                          className="w-5 h-5 animate-check-mark"
-                          viewBox="0 0 20 20"
-                          fill="currentColor">
+                          className={`hidden lg:block w-5 h-5 ml-auto transition-all duration-300 ${
+                            isActive || isCompleted
+                              ? "stroke-primary"
+                              : "stroke-muted-foreground"
+                          } ${isActive ? "animate-arrow-pulse" : ""}`}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
                           <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
+                            d="M5 18L9.67462 13.0607C10.1478 12.5607 10.3844 12.3107 10.3844 12C10.3844 11.6893 10.1478 11.4393 9.67462 10.9393L5 6M12.6608 18L17.3354 13.0607C17.8086 12.5607 18.0452 12.3107 18.0452 12C18.0452 11.6893 17.8086 11.4393 17.3354 10.9393L12.6608 6"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
                           />
                         </svg>
-                      ) : (
-                        <span
-                          className={isActive ? "animate-number-bounce" : ""}>
-                          {index + 1}
-                        </span>
                       )}
-                    </span>
-                    <h4
-                      className={`text-base transition-colors duration-300 ${
-                        isActive
-                          ? "text-primary font-medium"
-                          : isCompleted
-                          ? "text-primary/80"
-                          : "text-foreground"
-                      }`}>
-                      {step.title}
-                    </h4>
-
-                    {!isLast && (
-                      <svg
-                        className={`hidden lg:block w-5 h-5 ml-auto transition-all duration-300 ${
-                          isActive || isCompleted
-                            ? "stroke-primary"
-                            : "stroke-muted-foreground"
-                        } ${isActive ? "animate-arrow-pulse" : ""}`}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M5 18L9.67462 13.0607C10.1478 12.5607 10.3844 12.3107 10.3844 12C10.3844 11.6893 10.1478 11.4393 9.67462 10.9393L5 6M12.6608 18L17.3354 13.0607C17.8086 12.5607 18.0452 12.3107 18.0452 12C18.0452 11.6893 17.8086 11.4393 17.3354 10.9393L12.6608 6"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    )}
-                  </a>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
+                    </a>
+                  </li>
+                );
+              })}
+            </ol> */}
+        {/* </div> */}
 
         {/* Loading overlay */}
         {isLoading && (
@@ -257,24 +256,135 @@ export default function ResumeUploadPage() {
         )}
 
         {/* Main content area with side-by-side layout */}
-        <div className="flex flex-col lg:flex-row items-center">
+        <div className="flex flex-col lg:flex-row items-start pt-20">
           {/* Left side - Illustration */}
+
           <motion.div
             key={`illustration-${currentStep}`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
-            className="w-full lg:w-2/5 flex flex-col justify-center items-start sticky top-24 self-center">
-            <div className="relative w-full max-w-md aspect-square">
-              <Image
-                src={steps.find((s) => s.id === currentStep)?.illustration}
-                alt={steps.find((s) => s.id === currentStep)?.altText}
-                className="object-contain"
-                fill
-                priority
-              />
+            className="w-full h-full lg:w-2/5 flex flex-col justify-between items-center">
+            <div className="mb-8">
+              {/* Progress Steps */}
+              <ol className="relative border-s border-muted/60 dark:border-muted/40 text-muted-foreground">
+                {steps.map((step, index) => {
+                  const isActive = currentStep === step.id;
+                  const isCompleted =
+                    steps.findIndex((s) => s.id === currentStep) > index;
+                  const isLast = index === steps.length - 1;
+
+                  return (
+                    <li
+                      key={step.id}
+                      className={`${isLast ? "ms-6" : "mb-10 ms-6"}`}>
+                      <span
+                        className={`absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 ${
+                          isCompleted
+                            ? "bg-primary/20 dark:bg-primary/30"
+                            : isActive
+                            ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
+                            : "bg-muted dark:bg-muted/80"
+                        }`}>
+                        {isCompleted ? (
+                          <svg
+                            className="w-3.5 h-3.5 text-primary dark:text-primary"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 16 12">
+                            <path
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M1 5.917 5.724 10.5 15 1.5"
+                            />
+                          </svg>
+                        ) : (
+                          <span
+                            className={`${
+                              isActive
+                                ? "text-primary-foreground"
+                                : "text-muted-foreground"
+                            }`}>
+                            {index + 1}
+                          </span>
+                        )}
+                      </span>
+                      <h3
+                        className={`font-medium leading-tight ${
+                          isActive
+                            ? "text-primary dark:text-primary"
+                            : isCompleted
+                            ? "text-foreground dark:text-foreground"
+                            : "text-muted-foreground dark:text-muted-foreground"
+                        }`}>
+                        {step.title}&nbsp;&nbsp;
+                        {step.emoji}
+                      </h3>
+
+                      <p
+                        className={`text-sm ${
+                          isActive
+                            ? "text-primary/80 dark:text-primary/80"
+                            : "text-muted-foreground dark:text-muted-foreground/80"
+                        }`}>
+                        {step.description}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ol>
             </div>
+            <motion.div
+              key={`illustration-container-${currentStep}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden">
+              <motion.div
+                key={`image-${currentStep}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.3,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 20,
+                }}
+                className="relative w-full h-full">
+                <Image
+                  src={steps.find((s) => s.id === currentStep)!.illustration}
+                  alt={steps.find((s) => s.id === currentStep)!.altText}
+                  className="object-contain z-10 relative"
+                  fill
+                  priority
+                />
+              </motion.div>
+
+              {/* Step indicator at bottom */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {steps.map((step, index) => (
+                  <div
+                    key={`dot-${step.id}`}
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                      currentStep === step.id
+                        ? "bg-primary w-4"
+                        : "bg-muted-foreground/30"
+                    }`}
+                  />
+                ))}
+              </motion.div>
+            </motion.div>
           </motion.div>
 
           {/* Right side - Content */}
