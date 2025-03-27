@@ -51,9 +51,11 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg">
-                  Learn How It Works
-                </Button>
+                <Link href="#howitwork">
+                  <Button variant="outline" size="lg">
+                    Learn How It Works
+                  </Button>
+                </Link>
               </div>
               <div className="flex md:flex-row md:gap-2 flex-col">
                 <div className="flex -space-x-3">
@@ -148,7 +150,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-24 relative overflow-hidden" id="howitwork">
         <div className="container mx-auto px-6 md:px-8 relative">
           <motion.div
             className="mb-16 text-center"

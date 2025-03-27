@@ -18,10 +18,11 @@ import JobDescription from "@/components/resume/JobDescription";
 import ResumeAnalysis from "@/components/resume/ResumeAnalysis";
 import ResumeUploader from "@/components/resume/ResumeUpload";
 import { toast } from "sonner";
+import { DetailedAnalysis } from "@/types";
 
 export default function ResumeUploadPage() {
   const router = useRouter();
-  const [resumeScore, setResumeScore] = useState<any>();
+  const [resumeScore, setResumeScore] = useState<DetailedAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
@@ -60,31 +61,10 @@ export default function ResumeUploadPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to analyze resume");
       }
-
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      let decoder = new TextDecoder();
-      let result = "";
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          result += chunk;
-
-          try {
-            // Try to parse the accumulated JSON
-            const parsedData = JSON.parse(result);
-            setResumeScore(parsedData);
-            setCurrentStep("analysis");
-          } catch (e) {
-            // If parsing fails, continue accumulating chunks
-            continue;
-          }
-        }
-      }
+      const data = await response.json();
+      console.log("--handleJobDescriptionSubmit", data);
+      setResumeScore(data);
+      setCurrentStep("analysis");
     } catch (error) {
       console.error("Error analyzing resume:", error);
       toast("Analysis failed");
@@ -119,31 +99,11 @@ export default function ResumeUploadPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to analyze resume");
       }
+      const data = await response.json();
+      console.log("--response", data);
 
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      let decoder = new TextDecoder();
-      let result = "";
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          result += chunk;
-
-          try {
-            // Try to parse the accumulated JSON
-            const parsedData = JSON.parse(result);
-            setResumeScore(parsedData);
-            setCurrentStep("analysis");
-          } catch (e) {
-            // If parsing fails, continue accumulating chunks
-            continue;
-          }
-        }
-      }
+      setResumeScore(data);
+      setCurrentStep("analysis");
     } catch (error) {
       console.error("Error analyzing resume:", error);
       toast("Analysis failed");
@@ -297,7 +257,7 @@ export default function ResumeUploadPage() {
         )}
 
         {/* Main content area with side-by-side layout */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
+        <div className="flex flex-col lg:flex-row items-center">
           {/* Left side - Illustration */}
           <motion.div
             key={`illustration-${currentStep}`}
@@ -305,7 +265,7 @@ export default function ResumeUploadPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
-            className="w-full lg:w-2/5 flex flex-col justify-center items-start sticky top-24 self-start">
+            className="w-full lg:w-2/5 flex flex-col justify-center items-start sticky top-24 self-center">
             <div className="relative w-full max-w-md aspect-square">
               <Image
                 src={steps.find((s) => s.id === currentStep)?.illustration}
@@ -383,7 +343,7 @@ export default function ResumeUploadPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.5 }}>
-                  <ResumeAnalysis resumeScore={resumeScore} />
+                  <ResumeAnalysis result={resumeScore} />
 
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
                     <Button
@@ -399,13 +359,13 @@ export default function ResumeUploadPage() {
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Analyze Another Resume
                       </Button>
-                      <Button
+                      {/* <Button
                         size="lg"
                         onClick={handleOptimizeResume}
                         className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary">
                         <Zap className="mr-2 h-5 w-5" />
                         Optimize My Resume
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 </motion.div>

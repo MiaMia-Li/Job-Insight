@@ -1,24 +1,41 @@
 // app/api/resume/score/route.ts
-import { streamObject } from "ai";
+import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-// 使用动态导入，避免在构建时加载这些模块
-import type { PDFParse } from "pdf-parse";
-import type { Mammoth } from "mammoth";
+//@ts-ignore
+import pdfParse from "pdf-parse";
+import mammoth from "mammoth";
 
-// 设置为动态路由，避免在构建时执行
-export const dynamic = "force-dynamic";
+// 定义基本分析结果的schema
+const basicAnalysisSchema = z.object({
+  overall: z.number(),
+  content: z.number(),
+  keywords: z.number(),
+  format: z.number(),
+  atsCompatibility: z.number(),
+  strengths: z.array(z.string()),
+  improvements: z.array(z.string()),
+  summary: z.string(),
+});
+
+// 定义详细分析结果的schema（包含关键词匹配）
+const detailedAnalysisSchema = basicAnalysisSchema.extend({
+  keywordMatch: z.array(
+    z.object({
+      keyword: z.string(),
+      found: z.boolean(),
+      context: z.string(),
+    })
+  ),
+});
 
 export async function POST(req: Request) {
   const session = await auth();
   if (!session || !session.user?.id) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  //   if (!session.user.credits || session.user.credits <= 0) {
-  //     return NextResponse.json({ message: "No credits left" }, { status: 400 });
-  //   }
 
   try {
     // Parse the multipart form data
@@ -38,60 +55,59 @@ export async function POST(req: Request) {
     }
 
     // 获取文件类型
-    const fileType = resumeFile.type;
-    let resumeText = "";
+    // const fileType = resumeFile.type;
+    // let resumeText = "";
 
-    // 根据文件类型选择不同的解析方法
-    if (fileType === "application/pdf") {
-      // 处理PDF文件
-      const arrayBuffer = await resumeFile.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    // // 根据文件类型选择不同的解析方法
+    // if (fileType === "application/pdf") {
+    //   // 处理PDF文件
+    //   const arrayBuffer = await resumeFile.arrayBuffer();
+    //   const buffer = Buffer.from(arrayBuffer);
 
-      try {
-        // 动态导入 pdf-parse，避免在构建时加载
-        const pdfParse = (await import("pdf-parse")).default;
-        const pdfData = await pdfParse(buffer);
-        resumeText = pdfData.text;
-      } catch (pdfError) {
-        console.error("Error parsing PDF:", pdfError);
-        return NextResponse.json(
-          {
-            message:
-              "Unable to parse PDF file. Please ensure it's not password protected and contains extractable text.",
-          },
-          { status: 400 }
-        );
-      }
-    } else if (
-      fileType === "application/msword" ||
-      fileType ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
-      // 处理Word文档
-      const arrayBuffer = await resumeFile.arrayBuffer();
-      try {
-        // 动态导入 mammoth，避免在构建时加载
-        const mammoth = await import("mammoth");
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        resumeText = result.value;
-      } catch (docError) {
-        console.error("Error parsing Word document:", docError);
-        return NextResponse.json(
-          { message: "Unable to parse Word document." },
-          { status: 400 }
-        );
-      }
-    } else if (fileType === "text/plain") {
-      // 处理纯文本文件
-      resumeText = await resumeFile.text();
-    } else {
-      return NextResponse.json(
-        {
-          message: `Unsupported file type: ${fileType}. Please upload a PDF or text file.`,
-        },
-        { status: 400 }
-      );
-    }
+    //   try {
+    //     const pdfData = await pdfParse(buffer);
+    //     resumeText = pdfData.text;
+    //   } catch (pdfError) {
+    //     console.error("Error parsing PDF:", pdfError);
+    //     return NextResponse.json(
+    //       {
+    //         message:
+    //           "Unable to parse PDF file. Please ensure it's not password protected and contains extractable text.",
+    //       },
+    //       { status: 400 }
+    //     );
+    //   }
+    // } else if (
+    //   fileType === "application/msword" ||
+    //   fileType ===
+    //     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    // ) {
+    //   // 处理Word文档
+    //   const arrayBuffer = await resumeFile.arrayBuffer();
+    //   try {
+    //     const result = await mammoth.extractRawText({ arrayBuffer });
+    //     resumeText = result.value;
+    //   } catch (docError) {
+    //     console.error("Error parsing Word document:", docError);
+    //     return NextResponse.json(
+    //       { message: "Unable to parse Word document." },
+    //       { status: 400 }
+    //     );
+    //   }
+    // } else if (fileType === "text/plain") {
+    //   // 处理纯文本文件
+    //   resumeText = await resumeFile.text();
+    // } else {
+    //   return NextResponse.json(
+    //     {
+    //       message: `Unsupported file type: ${fileType}. Please upload a PDF or text file.`,
+    //     },
+    //     { status: 400 }
+    //   );
+    // }
+
+    let resumeText =
+      "MengYao Li+ Singapore, 149456 # sept.miamia@gmail.com  +65-80849936ð MengYao LiLanguages: JavaScript, TypeScriptFrameworks: Monorepo, ReactJS, VueJS, NextJS, NodeJS";
 
     // 检查解析后的文本是否为空或过短
     if (!resumeText || resumeText.trim().length < 50) {
@@ -109,10 +125,12 @@ export async function POST(req: Request) {
       resumeText.substring(0, 200)
     );
 
-    // Prepare the prompt based on whether job description is provided
+    // 准备提示信息
     let prompt = "";
+    let schema;
+
     if (analysisType === "basic" || !description) {
-      // Basic analysis without job description
+      // 基本分析（无职位描述）
       prompt = `
         You are an expert resume analyzer. Please analyze the following resume and provide a comprehensive evaluation.
         
@@ -123,8 +141,9 @@ export async function POST(req: Request) {
         Provide scores on a scale of 0-100 for each category and an overall score.
         Also provide specific strengths and improvement suggestions.
       `;
+      schema = basicAnalysisSchema;
     } else {
-      // Detailed analysis with job description matching
+      // 详细分析（有职位描述匹配）
       prompt = `
         You are an expert resume analyzer. Please analyze the following resume against the provided job description.
         
@@ -145,65 +164,28 @@ export async function POST(req: Request) {
         5. ATS compatibility
         
         Also provide specific strengths and improvement suggestions to better match this job.
+        Include a keywordMatch array with important keywords from the job description, whether they were found in the resume, and context if found.
       `;
+      schema = detailedAnalysisSchema;
     }
 
-    // Create a new StreamData object with the schema matching what the frontend expects
-    const result = await streamObject({
+    // 使用generateObject生成符合schema的分析结果
+    const result = await generateObject({
       model: openai("gpt-4o-mini"),
-      system: "You are an expert resume analyzer providing detailed feedback.",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      schema: z.object({
-        overall: z.number().describe("Overall resume score (0-100)"),
-        content: z.number().describe("Content quality score (0-100)"),
-        keywords: z.number().describe("Keywords relevance score (0-100)"),
-        format: z.number().describe("Format and presentation score (0-100)"),
-        atsCompatibility: z
-          .number()
-          .describe("ATS compatibility score (0-100)"),
-        strengths: z.array(z.string()).describe("List of resume strengths"),
-        improvements: z
-          .array(z.string())
-          .describe("List of improvement suggestions"),
-        keywordMatch: z
-          .array(
-            z.object({
-              keyword: z.string().describe("Job requirement keyword"),
-              found: z
-                .boolean()
-                .describe("Whether the keyword was found in the resume"),
-              context: z
-                .string()
-                .optional()
-                .describe("Context where the keyword appears in the resume"),
-            })
-          )
-          .optional()
-          .describe("Keyword matching analysis"),
-        summary: z.string().describe("Summary of the resume analysis"),
-      }),
+      schema: schema,
+      prompt: prompt,
       temperature: 0.3,
     });
 
-    return result.toTextStreamResponse();
+    console.log("--result", result.object);
+
+    // 返回分析结果
+    return NextResponse.json(result.object);
   } catch (error) {
     console.error("Error analyzing resume:", error);
     return NextResponse.json(
-      { message: "Failed to analyze resume" },
+      { message: "Failed to analyze resume", error: (error as Error).message },
       { status: 500 }
     );
   }
-}
-
-// 添加一个简单的 GET 处理程序，确保路由在构建时有效
-export async function GET() {
-  return NextResponse.json(
-    { message: "Resume scoring API - use POST method to analyze resumes" },
-    { status: 200 }
-  );
 }

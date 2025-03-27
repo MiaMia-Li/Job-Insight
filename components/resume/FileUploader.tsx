@@ -31,7 +31,7 @@ export default function FileUploader({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full">
       <Card className="border-2 border-dashed border-muted-foreground/25 bg-background/50 backdrop-blur-sm">
         <CardContent className="p-0">
           <div
