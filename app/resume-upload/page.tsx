@@ -9,6 +9,10 @@ import {
   Briefcase,
   FileCheck,
   Loader2,
+  Zap,
+  ChevronLeft,
+  ChevronRightIcon,
+  CheckIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -18,6 +22,9 @@ import ResumeAnalysis from "@/components/resume/ResumeAnalysis";
 import ResumeUploader from "@/components/resume/ResumeUpload";
 import { toast } from "sonner";
 import { DetailedAnalysis } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import React from "react";
+import { useAuth } from "@/providers/auth-context";
 
 export default function ResumeUploadPage() {
   const router = useRouter();
@@ -58,7 +65,7 @@ export default function ResumeUploadPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to analyze resume");
+        throw new Error(errorData.message);
       }
       const data = await response.json();
       console.log("--handleJobDescriptionSubmit", data);
@@ -66,7 +73,7 @@ export default function ResumeUploadPage() {
       setCurrentStep("analysis");
     } catch (error) {
       console.error("Error analyzing resume:", error);
-      toast("Analysis failed");
+      toast.error((error as any).message || "Failed to analyze resume");
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +103,7 @@ export default function ResumeUploadPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to analyze resume");
+        throw new Error(errorData.message);
       }
       const data = await response.json();
       console.log("--response", data);
@@ -105,7 +112,7 @@ export default function ResumeUploadPage() {
       setCurrentStep("analysis");
     } catch (error) {
       console.error("Error analyzing resume:", error);
-      toast("Analysis failed");
+      toast.error((error as any).message || "Failed to analyze resume");
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +132,6 @@ export default function ResumeUploadPage() {
   // Step data with illustrations
   const steps = [
     {
-      emoji: "📃",
       id: "upload",
       title: "Upload Resume",
       description:
@@ -136,7 +142,6 @@ export default function ResumeUploadPage() {
       altText: "Person uploading a resume document",
     },
     {
-      emoji: "💼",
       id: "job",
       title: "Job Description",
       description:
@@ -147,7 +152,6 @@ export default function ResumeUploadPage() {
       altText: "Person writing job requirements",
     },
     {
-      emoji: "🧐",
       id: "analysis",
       title: "Analysis Results",
       description:
@@ -160,88 +164,15 @@ export default function ResumeUploadPage() {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary/5 via-primary/3 to-background dark:from-black/90 dark:via-black/95 dark:to-black">
-      <div className="container max-w-7xl mx-auto px-4 py-12 relative z-10">
-        {/* <div className="pb-16 pt-16"> */}
-        {/* <ol className="flex flex-col items-center w-full space-y-4">
-              {steps.map((step, index) => {
-                const isActive = currentStep === step.id;
-                const isCompleted =
-                  steps.findIndex((s) => s.id === currentStep) > index;
-                const isLast = index === steps.length - 1;
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background dark:from-black/90 dark:via-black/95 dark:to-black">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-primary/5 rounded-full blur-3xl transform translate-x-1/4 -translate-y-1/4"></div>
+        <div className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-primary/5 rounded-full blur-3xl transform -translate-x-1/4 translate-y-1/4"></div>
+        <div className="absolute top-1/2 left-1/2 w-1/3 h-1/3 bg-primary/3 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
+      </div>
 
-                return (
-                  <li key={step.id} className="flex-1 w-full">
-                    <a
-                      className={`flex items-center font-medium pr-4 w-full rounded-lg transition-all duration-500 relative overflow-hidden hover:shadow-md ${
-                        isActive || isCompleted
-                          ? "bg-primary/10 hover:bg-primary/15"
-                          : "bg-secondary-foreground/5 hover:bg-secondary-foreground/10"
-                      }`}>
-                      <span
-                        className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex justify-center items-center mr-3 text-sm
-                      transition-all duration-300 relative z-10 group
-                      ${
-                        isActive
-                          ? "bg-primary text-white"
-                          : isCompleted
-                          ? "bg-primary/20 border border-primary text-primary"
-                          : "bg-muted border border-border text-muted-foreground"
-                      }`}>
-                        {isCompleted ? (
-                          <svg
-                            className="w-5 h-5 animate-check-mark"
-                            viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ) : (
-                          <span
-                            className={isActive ? "animate-number-bounce" : ""}>
-                            {index + 1}
-                          </span>
-                        )}
-                      </span>
-                      <h4
-                        className={`text-base transition-colors duration-300 ${
-                          isActive
-                            ? "text-primary font-medium"
-                            : isCompleted
-                            ? "text-primary/80"
-                            : "text-foreground"
-                        }`}>
-                        {step.title}
-                      </h4>
-
-                      {!isLast && (
-                        <svg
-                          className={`hidden lg:block w-5 h-5 ml-auto transition-all duration-300 ${
-                            isActive || isCompleted
-                              ? "stroke-primary"
-                              : "stroke-muted-foreground"
-                          } ${isActive ? "animate-arrow-pulse" : ""}`}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <path
-                            d="M5 18L9.67462 13.0607C10.1478 12.5607 10.3844 12.3107 10.3844 12C10.3844 11.6893 10.1478 11.4393 9.67462 10.9393L5 6M12.6608 18L17.3354 13.0607C17.8086 12.5607 18.0452 12.3107 18.0452 12C18.0452 11.6893 17.8086 11.4393 17.3354 10.9393L12.6608 6"
-                            stroke="currentColor"
-                            strokeWidth="1.6"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      )}
-                    </a>
-                  </li>
-                );
-              })}
-            </ol> */}
-        {/* </div> */}
-
+      <div className="container max-w-7xl mx-auto px-4 py-8 md:py-16 relative z-10">
         {/* Loading overlay */}
         {isLoading && (
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -255,232 +186,370 @@ export default function ResumeUploadPage() {
           </div>
         )}
 
-        {/* Main content area with side-by-side layout */}
-        <div className="flex flex-col lg:flex-row items-start pt-20">
-          {/* Left side - Illustration */}
+        {/* Header with progress indicator */}
+        <div className="mb-12 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+            Resume Analyzer
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+            Analyze how well your resume matches job requirements and get
+            personalized recommendations.
+          </p>
 
-          <motion.div
-            key={`illustration-${currentStep}`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.5 }}
-            className="w-full h-full lg:w-2/5 flex flex-col justify-between items-center">
-            <div className="mb-8">
-              {/* Progress Steps */}
-              <ol className="relative border-s border-muted/60 dark:border-muted/40 text-muted-foreground">
-                {steps.map((step, index) => {
-                  const isActive = currentStep === step.id;
-                  const isCompleted =
-                    steps.findIndex((s) => s.id === currentStep) > index;
-                  const isLast = index === steps.length - 1;
+          {/* Horizontal progress indicator for larger screens */}
+          <div className="hidden md:flex justify-center items-center max-w-3xl mx-auto">
+            {steps.map((step, index) => {
+              const isActive = currentStep === step.id;
+              const isCompleted =
+                steps.findIndex((s) => s.id === currentStep) > index;
 
-                  return (
-                    <li
-                      key={step.id}
-                      className={`${isLast ? "ms-6" : "mb-10 ms-6"}`}>
-                      <span
-                        className={`absolute flex items-center justify-center w-8 h-8 rounded-full -start-4 ${
-                          isCompleted
-                            ? "bg-primary/20 dark:bg-primary/30"
-                            : isActive
-                            ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                            : "bg-muted dark:bg-muted/80"
-                        }`}>
-                        {isCompleted ? (
-                          <svg
-                            className="w-3.5 h-3.5 text-primary dark:text-primary"
-                            aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 16 12">
-                            <path
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M1 5.917 5.724 10.5 15 1.5"
-                            />
-                          </svg>
-                        ) : (
-                          <span
-                            className={`${
-                              isActive
-                                ? "text-primary-foreground"
-                                : "text-muted-foreground"
-                            }`}>
-                            {index + 1}
-                          </span>
-                        )}
-                      </span>
-                      <h3
-                        className={`font-medium leading-tight ${
-                          isActive
-                            ? "text-primary dark:text-primary"
-                            : isCompleted
-                            ? "text-foreground dark:text-foreground"
-                            : "text-muted-foreground dark:text-muted-foreground"
-                        }`}>
-                        {step.title}&nbsp;&nbsp;
-                        {step.emoji}
-                      </h3>
-
-                      <p
-                        className={`text-sm ${
-                          isActive
-                            ? "text-primary/80 dark:text-primary/80"
-                            : "text-muted-foreground dark:text-muted-foreground/80"
-                        }`}>
-                        {step.description}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-            <motion.div
-              key={`illustration-container-${currentStep}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative w-full max-w-md aspect-square rounded-2xl overflow-hidden">
-              <motion.div
-                key={`image-${currentStep}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.3,
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 20,
-                }}
-                className="relative w-full h-full">
-                <Image
-                  src={steps.find((s) => s.id === currentStep)!.illustration}
-                  alt={steps.find((s) => s.id === currentStep)!.altText}
-                  className="object-contain z-10 relative"
-                  fill
-                  priority
-                />
-              </motion.div>
-
-              {/* Step indicator at bottom */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {steps.map((step, index) => (
+              return (
+                <React.Fragment key={step.id}>
+                  {/* Step indicator */}
                   <div
-                    key={`dot-${step.id}`}
-                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                      currentStep === step.id
-                        ? "bg-primary w-4"
-                        : "bg-muted-foreground/30"
-                    }`}
-                  />
-                ))}
-              </motion.div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right side - Content */}
-          <div className="w-full lg:w-3/5">
-            <AnimatePresence mode="wait">
-              {/* Step 1: Upload Resume */}
-              {currentStep === "upload" && (
-                <motion.div
-                  key="upload-content"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.5 }}>
-                  <ResumeUploader onContinue={handleContinue} />
-                </motion.div>
-              )}
-
-              {/* Step 2: Job Description */}
-              {currentStep === "job" && (
-                <motion.div
-                  key="job-content"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.5 }}>
-                  <JobDescription
-                    jobTitle={jobTitle}
-                    setJobTitle={setJobTitle}
-                    company={company}
-                    setCompany={setCompany}
-                    location={location}
-                    setLocation={setLocation}
-                    description={description}
-                    setDescription={setDescription}
-                  />
-
-                  <div className="flex justify-between mt-6">
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentStep("upload")}>
-                      Back
-                    </Button>
-                    <div className="space-x-4">
-                      <Button
-                        variant="outline"
-                        onClick={handleSkipJobDescription}
-                        disabled={isLoading}>
-                        Skip this step
-                      </Button>
-                      <Button
-                        onClick={handleJobDescriptionSubmit}
-                        disabled={!description.trim() || isLoading}>
-                        Analyze Match
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
+                    className="flex flex-col items-center relative cursor-pointer"
+                    onClick={() => {
+                      const currentIndex = steps.findIndex(
+                        (s) => s.id === currentStep
+                      );
+                      if (index <= currentIndex) {
+                        setCurrentStep(step.id);
+                      }
+                    }}>
+                    {/* Step number/icon */}
+                    <div
+                      className={`
+                  w-10 h-10 rounded-full flex items-center justify-center z-10
+                  transition-all duration-300
+                  ${
+                    isCompleted
+                      ? "bg-primary text-primary-foreground"
+                      : isActive
+                      ? "bg-primary/20 border-2 border-primary text-primary"
+                      : "bg-muted text-muted-foreground"
+                  }
+                `}>
+                      {isCompleted ? (
+                        <CheckIcon className="h-5 w-5" />
+                      ) : (
+                        <span>{index + 1}</span>
+                      )}
                     </div>
+
+                    {/* Step title */}
+                    <span
+                      className={`
+                  absolute -bottom-8 whitespace-nowrap text-sm font-medium
+                  ${
+                    isActive || isCompleted
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }
+                `}>
+                      {step.title}
+                    </span>
                   </div>
-                </motion.div>
-              )}
 
-              {/* Step 3: Analysis Results */}
-              {currentStep === "analysis" && (
+                  {/* Connector line */}
+                  {index < steps.length - 1 && (
+                    <div className="w-24 h-[2px] mx-2">
+                      <div
+                        className={`
+                    h-full transition-all duration-500
+                    ${isCompleted ? "bg-primary" : "bg-muted"}
+                  `}></div>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main content area */}
+        <div className="max-w-6xl mx-auto bg-card/50 backdrop-blur-sm rounded-xl shadow-lg border border-border/50 overflow-hidden">
+          <div className="flex flex-col lg:flex-row">
+            {/* Left side - Steps and Illustration */}
+            <div className="w-full lg:w-2/5 bg-muted/30 dark:bg-muted/10 p-6 lg:p-8 border-r border-border/50">
+              {/* Steps list - Vertical for all screen sizes */}
+              <div className="mb-8">
+                <h2 className="text-lg font-medium mb-4 text-foreground/80">
+                  Your Progress
+                </h2>
+                <ol className="space-y-4">
+                  {steps.map((step, index) => {
+                    const isActive = currentStep === step.id;
+                    const isCompleted =
+                      steps.findIndex((s) => s.id === currentStep) > index;
+
+                    return (
+                      <li
+                        key={step.id}
+                        onClick={() => {
+                          const currentIndex = steps.findIndex(
+                            (s) => s.id === currentStep
+                          );
+                          if (index <= currentIndex) {
+                            setCurrentStep(step.id);
+                          }
+                        }}
+                        className={`
+                      flex items-start gap-4 p-3 rounded-lg transition-all duration-300
+                      ${isActive ? "bg-primary/10 dark:bg-primary/20" : ""}
+                      ${
+                        index <= steps.findIndex((s) => s.id === currentStep)
+                          ? "cursor-pointer hover:bg-muted/70"
+                          : "opacity-60"
+                      }
+                    `}>
+                        <div className="flex-shrink-0 flex items-center justify-center mt-0.5">
+                          {isCompleted ? (
+                            <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                              <CheckIcon className="h-3.5 w-3.5" />
+                            </div>
+                          ) : isActive ? (
+                            <div className="w-6 h-6 rounded-full bg-primary/20 dark:bg-primary/10 flex items-center justify-center">
+                              <div className="w-4 h-4 rounded-full bg-primary"></div>
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-transparent flex items-center justify-center">
+                              <div className="w-4 h-4 rounded-full bg-muted-foreground/30 dark:bg-muted"></div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1">
+                          <h3
+                            className={`
+                        font-medium leading-tight
+                        ${
+                          isActive
+                            ? "text-primary"
+                            : isCompleted
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                        }
+                      `}>
+                            {step.title}
+                          </h3>
+                          <p
+                            className={`
+                        text-sm mt-1
+                        ${
+                          isActive
+                            ? "text-primary/80"
+                            : "text-muted-foreground/80"
+                        }
+                      `}>
+                            {step.description}
+                          </p>
+                        </div>
+
+                        {/* Navigation arrow for completed steps */}
+                        {isCompleted && !isActive && (
+                          <ChevronRightIcon className="h-5 w-5 text-muted-foreground/50 self-center" />
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+
+              {/* Illustration */}
+              <div className="relative aspect-square overflow-hidden">
                 <motion.div
-                  key="analysis-content"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.5 }}>
-                  <ResumeAnalysis result={resumeScore} />
+                  key={`illustration-${currentStep}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 p-4 flex items-center justify-center">
+                  <Image
+                    src={steps.find((s) => s.id === currentStep)!.illustration}
+                    alt={steps.find((s) => s.id === currentStep)!.altText}
+                    className="object-contain max-h-full"
+                    fill
+                    priority
+                  />
+                </motion.div>
 
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentStep("job")}>
-                      Back to Job Description
-                    </Button>
-                    <div className="flex flex-col sm:flex-row gap-4">
+                {/* Step indicator dots */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 bg-background/70 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                  {steps.map((step, index) => (
+                    <button
+                      key={`dot-${step.id}`}
+                      onClick={() => {
+                        const currentIndex = steps.findIndex(
+                          (s) => s.id === currentStep
+                        );
+                        if (index <= currentIndex) {
+                          setCurrentStep(step.id);
+                        }
+                      }}
+                      className={`
+                    rounded-full transition-all duration-300
+                    ${
+                      currentStep === step.id
+                        ? "bg-primary w-4 h-1.5"
+                        : index < steps.findIndex((s) => s.id === currentStep)
+                        ? "bg-primary/60 w-1.5 h-1.5"
+                        : "bg-muted-foreground/30 w-1.5 h-1.5"
+                    }
+                    ${
+                      index <= steps.findIndex((s) => s.id === currentStep)
+                        ? "cursor-pointer hover:opacity-80"
+                        : ""
+                    }
+                  `}
+                      aria-label={`Go to step ${index + 1}: ${step.title}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Content */}
+            {/* Right side - Content */}
+            <div className="w-full lg:w-3/5 p-6 lg:p-8">
+              <AnimatePresence mode="wait">
+                {/* Step 1: Upload Resume */}
+                {currentStep === "upload" && (
+                  <motion.div
+                    key="upload-content"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{
+                      duration: 0.4,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15,
+                    }}
+                    className="h-full flex flex-col">
+                    <ResumeUploader onContinue={handleContinue} />
+                  </motion.div>
+                )}
+
+                {/* Step 2: Job Description */}
+                {currentStep === "job" && (
+                  <motion.div
+                    key="job-content"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{
+                      duration: 0.4,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15,
+                    }}
+                    className="h-full flex flex-col">
+                    <div className="flex-grow">
+                      <JobDescription
+                        jobTitle={jobTitle}
+                        setJobTitle={setJobTitle}
+                        company={company}
+                        setCompany={setCompany}
+                        location={location}
+                        setLocation={setLocation}
+                        description={description}
+                        setDescription={setDescription}
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-between mt-6 gap-4">
                       <Button
                         variant="outline"
                         onClick={() => setCurrentStep("upload")}
-                        className="text-muted-foreground">
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Analyze Another Resume
+                        className="group">
+                        <ChevronLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                        Back
                       </Button>
-                      {/* <Button
-                        size="lg"
-                        onClick={handleOptimizeResume}
-                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary">
-                        <Zap className="mr-2 h-5 w-5" />
-                        Optimize My Resume
-                      </Button> */}
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={handleSkipJobDescription}
+                          disabled={isLoading}>
+                          Skip this step
+                        </Button>
+                        <Button
+                          onClick={handleJobDescriptionSubmit}
+                          disabled={!description.trim() || isLoading}
+                          className="relative overflow-hidden group">
+                          <span className="relative z-10 flex items-center">
+                            Analyze Match
+                            <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                          </span>
+                          {isLoading && (
+                            <span className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            </span>
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+
+                {/* Step 3: Analysis Results */}
+                {currentStep === "analysis" && (
+                  <motion.div
+                    key="analysis-content"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{
+                      duration: 0.4,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 15,
+                    }}
+                    className="h-full flex flex-col">
+                    <div className="flex-grow">
+                      <div className="flex justify-end mb-4">
+                        <Badge
+                          variant="outline"
+                          className="bg-primary/10 text-primary border-primary/20">
+                          {resumeScore?.overallMatch
+                            ? `${resumeScore.overallMatch}% Match`
+                            : "Analysis Complete"}
+                        </Badge>
+                      </div>
+
+                      <ResumeAnalysis result={resumeScore} />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentStep("job")}
+                        className="group">
+                        <ChevronLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                        Back to Job Description
+                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => setCurrentStep("upload")}
+                          className="text-muted-foreground group">
+                          <RefreshCw className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" />
+                          Analyze Another Resume
+                        </Button>
+                        <Button
+                          size="lg"
+                          onClick={() => {
+                            /* handleOptimizeResume */
+                          }}
+                          className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-shadow">
+                          <Zap className="mr-2 h-5 w-5" />
+                          Optimize My Resume
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>

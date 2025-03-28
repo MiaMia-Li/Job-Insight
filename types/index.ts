@@ -18,3 +18,14 @@ export type DetailedAnalysis = BasicAnalysis & {
     context: string;
   }>;
 };
+
+// types/auth.ts
+export interface AuthContextType {
+  showLoginDialog: boolean;
+  openLoginDialog: () => void;
+  closeLoginDialog: () => void;
+  requireAuth: (callback: () => void) => void;
+  credits?: number;
+  updateCredits?: (newCredits: number) => void;
+  refreshCredits?: () => void;
+}

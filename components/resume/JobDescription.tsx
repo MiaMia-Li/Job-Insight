@@ -101,8 +101,8 @@ const JobDescription = ({
       animate="visible"
       exit="exit"
       className="w-full">
-      <Card className="border-primary/10 shadow-lg">
-        <CardContent className="p-6">
+      <Card className="border-none shadow-none bg-transparent">
+        <CardContent className="p-0">
           <div className="space-y-6">
             <motion.div
               variants={itemVariants}

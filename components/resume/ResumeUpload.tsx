@@ -27,6 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/providers/auth-context";
 
 interface FileInfo {
   id?: string;
@@ -44,6 +45,8 @@ interface ResumeUploaderProps {
 }
 
 export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
+  const { requireAuth } = useAuth();
+
   // State management
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -92,7 +95,7 @@ export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
     };
 
     fetchUserFiles();
-  }, []);
+  }, [requireAuth]);
 
   // File handling functions
   const handleDragOver = (e: React.DragEvent) => {
@@ -298,8 +301,8 @@ export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
       animate="visible"
       exit="exit"
       className="w-full">
-      <Card className="border-primary/10 shadow-lg">
-        <CardContent className="p-6">
+      <Card className="border-none shadow-none bg-transparent">
+        <CardContent className="p-0">
           <div className="space-y-6">
             <motion.div
               variants={itemVariants}
@@ -366,7 +369,7 @@ export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
                       ? "border-primary bg-primary/5"
                       : "border-muted-foreground/20"
                   }`}
-                  onDrop={handleDrop}
+                  onDrop={() => requireAuth(() => handleDrop)}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}>
                   <div className="flex flex-col items-center justify-center space-y-4 py-6">
@@ -384,14 +387,16 @@ export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
                       <Button
                         variant="outline"
                         className="flex-1"
-                        onClick={() => fileInputRef.current?.click()}>
+                        onClick={() =>
+                          requireAuth(() => fileInputRef.current?.click())
+                        }>
                         <Upload className="mr-2 h-4 w-4" />
                         Upload file
                       </Button>
 
                       <Dialog
                         open={isDialogOpen}
-                        onOpenChange={setIsDialogOpen}>
+                        onOpenChange={() => requireAuth(() => setIsDialogOpen)}>
                         <DialogTrigger asChild>
                           <Button variant="outline" className="flex-1">
                             <FolderOpen className="mr-2 h-4 w-4" />

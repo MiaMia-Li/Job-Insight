@@ -4,9 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "../providers/theme-provider";
 import { Toaster } from "../components/ui/sonner";
 import SessionWrapper from "../components/session-wrapper";
-import { AI } from "./ai";
 import { Header } from "@/components/header/Header";
-import { DotBackground } from "@/components/animation/DotBackground";
+import { AuthProvider } from "@/providers/auth-context";
+import { LoginDialog } from "@/components/auth/LoginDialog";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -64,13 +64,12 @@ export default function RootLayout({
           <div className="background-grid">
             <div className="content-container">
               <ThemeProvider attribute="class">
-                <AI>
+                <AuthProvider>
+                  <LoginDialog />
                   <Header />
-
                   {children}
-
                   <Toaster />
-                </AI>
+                </AuthProvider>
               </ThemeProvider>
             </div>
           </div>

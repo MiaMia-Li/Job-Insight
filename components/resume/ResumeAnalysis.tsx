@@ -577,8 +577,8 @@ const ResumeAnalysisResult = ({
         exit="exit"
         className="w-full">
         <div ref={contentRef}>
-          <Card className="border-primary/10 shadow-lg">
-            <CardContent className="p-6">
+          <Card className="border-none shadow-none bg-transparent">
+            <CardContent className="p-0">
               {/* 卡片头部 - 与其他组件保持一致性 */}
               <motion.div
                 variants={itemVariants}
