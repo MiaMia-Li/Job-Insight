@@ -396,7 +396,9 @@ export default function ResumeUploader({ onContinue }: ResumeUploaderProps) {
 
                       <Dialog
                         open={isDialogOpen}
-                        onOpenChange={() => requireAuth(() => setIsDialogOpen)}>
+                        onOpenChange={(value) =>
+                          requireAuth(() => setIsDialogOpen(value))
+                        }>
                         <DialogTrigger asChild>
                           <Button variant="outline" className="flex-1">
                             <FolderOpen className="mr-2 h-4 w-4" />

@@ -201,7 +201,7 @@ const JobDescription = ({
                 </div>
               </div>
 
-              <div className="space-y-2 sm:col-span-2">
+              {/* <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="location">Location</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -213,11 +213,13 @@ const JobDescription = ({
                     className="pl-10"
                   />
                 </div>
-              </div>
+              </div> */}
 
               <div className="space-y-2 sm:col-span-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="description">Job Description</Label>
+                  <Label htmlFor="description">
+                    <span className="text-destructive">*</span>Job Description
+                  </Label>
                   <span className="text-xs text-muted-foreground">
                     {description.length > 0
                       ? `${description.length} characters`

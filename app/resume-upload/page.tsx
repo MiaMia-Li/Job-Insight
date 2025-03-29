@@ -106,9 +106,42 @@ export default function ResumeUploadPage() {
         throw new Error(errorData.message);
       }
       const data = await response.json();
-      console.log("--response", data);
 
       setResumeScore(data);
+      // const mockdata = {
+      //   analysisId: "cm8u93g640006grp0ln64xxer",
+      //   keywordMatch: [
+      //     {
+      //       context: "",
+      //       found: false,
+      //       keyword: "HTML5",
+      //     },
+      //     {
+      //       context: "JavaScript, TypeScript, ReactJS, VueJS",
+      //       found: true,
+      //       keyword: "JavaScript frameworks",
+      //     },
+      //   ],
+      //   atsCompatibility: 80,
+      //   content: 70,
+      //   format: 75,
+      //   keywords: 60,
+      //   overall: 60,
+      //   improvements: [
+      //     "Add a professional summary or objective statement",
+      //     "Include more details about work experience and projects",
+      //     "Use bullet points for better readability",
+      //     "Ensure consistent formatting and spacing",
+      //   ],
+      //   strengths: [
+      //     "Proficient in multiple programming languages and frameworks",
+      //     "Clear contact information provided",
+      //     "Relevant technical skills listed",
+      //   ],
+      //   summary:
+      //     "The resume presents a good foundation with relevant skills, but lacks depth in experience and structure. Enhancing the content and format will improve its effectiveness.",
+      // };
+      // setResumeScore(mockdata);
       setCurrentStep("analysis");
     } catch (error) {
       console.error("Error analyzing resume:", error);
@@ -120,7 +153,12 @@ export default function ResumeUploadPage() {
 
   // Navigate to resume optimization page
   const handleOptimizeResume = () => {
-    router.push("/resume-optimize");
+    console.log("-resumeScore", resumeScore);
+    if (!resumeScore) {
+      toast.error("opps~~");
+      return;
+    }
+    router.push(`/resume-optimize?id=${resumeScore.analysisId}`);
   };
 
   // 处理继续按钮点击事件
@@ -187,7 +225,7 @@ export default function ResumeUploadPage() {
         )}
 
         {/* Header with progress indicator */}
-        <div className="mb-12 text-center">
+        <div className="my-12 text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
             Resume Analyzer
           </h1>
@@ -506,17 +544,10 @@ export default function ResumeUploadPage() {
                     }}
                     className="h-full flex flex-col">
                     <div className="flex-grow">
-                      <div className="flex justify-end mb-4">
-                        <Badge
-                          variant="outline"
-                          className="bg-primary/10 text-primary border-primary/20">
-                          {resumeScore?.overallMatch
-                            ? `${resumeScore.overallMatch}% Match`
-                            : "Analysis Complete"}
-                        </Badge>
-                      </div>
-
-                      <ResumeAnalysis result={resumeScore} />
+                      <ResumeAnalysis
+                        result={resumeScore}
+                        onOptimize={handleOptimizeResume}
+                      />
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8">
@@ -534,15 +565,6 @@ export default function ResumeUploadPage() {
                           className="text-muted-foreground group">
                           <RefreshCw className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" />
                           Analyze Another Resume
-                        </Button>
-                        <Button
-                          size="lg"
-                          onClick={() => {
-                            /* handleOptimizeResume */
-                          }}
-                          className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-shadow">
-                          <Zap className="mr-2 h-5 w-5" />
-                          Optimize My Resume
                         </Button>
                       </div>
                     </div>

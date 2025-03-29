@@ -17,6 +17,8 @@ model User {
   sessions      Session[]
 
   files         File[]          // 添加这一行，建立与 File 的关系
+  resumeAnalyses ResumeAnalysis[]
+
   // Optional for WebAuthn support
   Authenticator Authenticator[]
  
@@ -98,8 +100,39 @@ model File {
   // 可选：添加其他元数据字段
   description String?  // 文件描述
   tags        String?  // 标签，可以用逗号分隔
+  resumeAnalyses ResumeAnalysis[]
+
   
   // 索引
   @@index([userId])
   @@map("files") // 表名映射
+}
+
+
+model ResumeAnalysis {
+  id            String   @id @default(cuid())
+  userId        String
+  fileId        String?
+  fileName      String
+  analysisType  String   // "basic" 或 "detailed"
+  
+  // 使用JSON字段存储分析结果
+  result        Json     // 存储完整的分析结果
+  
+  // 职位信息 (仅用于详细分析)
+  jobTitle      String?
+  company       String?
+  location      String?
+  description   String?  @db.Text
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // 关联
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  file          File?    @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([fileId])
+  @@map("resume_analyses")
 }

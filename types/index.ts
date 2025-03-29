@@ -8,11 +8,14 @@ export type BasicAnalysis = {
   strengths: string[];
   improvements: string[];
   summary: string;
+  suggestions: any;
+  analysisId: string;
+  saved: boolean;
 };
 
 // 定义详细分析结果的类型（包含关键词匹配）
 export type DetailedAnalysis = BasicAnalysis & {
-  keywordMatch: Array<{
+  keywordMatch?: Array<{
     keyword: string;
     found: boolean;
     context: string;

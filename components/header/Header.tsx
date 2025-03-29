@@ -22,11 +22,11 @@ export function Header() {
       link: "/resume-upload",
       icon: <Upload className="h-4 w-4 mr-1" />,
     },
-    {
-      label: "Optimize",
-      link: "/resume-optimize",
-      icon: <BarChart className="h-4 w-4 mr-1" />,
-    },
+    // {
+    //   label: "Optimize",
+    //   link: "/resume-optimize",
+    //   icon: <BarChart className="h-4 w-4 mr-1" />,
+    // },
     {
       label: "Templates",
       link: "/templates",

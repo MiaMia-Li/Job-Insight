@@ -22,40 +22,7 @@ import { DetailedAnalysis } from "@/types";
 
 type ResumeAnalysisResultProps = {
   result: DetailedAnalysis | null;
-  onOptimize?: () => void;
-};
-
-const mockdata = {
-  keywordMatch: [
-    {
-      context: "",
-      found: false,
-      keyword: "HTML5",
-    },
-    {
-      context: "JavaScript, TypeScript, ReactJS, VueJS",
-      found: true,
-      keyword: "JavaScript frameworks",
-    },
-  ],
-  atsCompatibility: 80,
-  content: 70,
-  format: 75,
-  keywords: 60,
-  overall: 60,
-  improvements: [
-    "Add a professional summary or objective statement",
-    "Include more details about work experience and projects",
-    "Use bullet points for better readability",
-    "Ensure consistent formatting and spacing",
-  ],
-  strengths: [
-    "Proficient in multiple programming languages and frameworks",
-    "Clear contact information provided",
-    "Relevant technical skills listed",
-  ],
-  summary:
-    "The resume presents a good foundation with relevant skills, but lacks depth in experience and structure. Enhancing the content and format will improve its effectiveness.",
+  onOptimize: () => void;
 };
 
 // 动画变体

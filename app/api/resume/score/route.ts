@@ -5,6 +5,67 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { getFileContent } from "@/lib/parase";
+import { saveResumeAnalysis } from "@/actions/resume-analysis";
+
+// Define suggestion example schema
+const exampleSchema = z.object({
+  before: z.string(),
+  after: z.string(),
+});
+
+// Define keyword schema
+const keywordSchema = z.object({
+  text: z.string(),
+  found: z.boolean(),
+  count: z.number(),
+});
+
+// Define suggestion item schemas
+const contentSuggestionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  example: exampleSchema,
+});
+
+const keywordSuggestionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  keywords: z.array(keywordSchema).optional(),
+  example: exampleSchema, // 必须包含 before 和 after
+});
+
+const formatSuggestionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  example: exampleSchema,
+});
+
+const customSuggestionSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  example: exampleSchema,
+});
+
+// 修改这里：将 suggestionsSchema 改为对象结构，而不是数组
+const suggestionsSchema = z.object({
+  content: z.array(contentSuggestionSchema),
+  keywords: z.array(keywordSuggestionSchema),
+  format: z.array(formatSuggestionSchema),
+  custom: z.array(customSuggestionSchema),
+});
+
+const suggestionsSchemaBasic = z.object({
+  content: z.array(contentSuggestionSchema),
+  // keywords: z.array(keywordSuggestionSchema),
+  format: z.array(formatSuggestionSchema),
+  custom: z.array(customSuggestionSchema),
+});
+// 定义关键词匹配 schema
+const keywordMatchSchema = z.object({
+  keyword: z.string(),
+  found: z.boolean(),
+  context: z.string(),
+});
 
 // 定义基本分析结果的schema
 const basicAnalysisSchema = z.object({
@@ -16,18 +77,16 @@ const basicAnalysisSchema = z.object({
   strengths: z.array(z.string()),
   improvements: z.array(z.string()),
   summary: z.string(),
+  suggestions: suggestionsSchemaBasic,
+  //keywordMatch: z.array(keywordMatchSchema), // 添加到基本 schema 中
 });
 
-// 定义详细分析结果的schema（包含关键词匹配）
 const detailedAnalysisSchema = basicAnalysisSchema.extend({
-  keywordMatch: z.array(
-    z.object({
-      keyword: z.string(),
-      found: z.boolean(),
-      context: z.string(),
-    })
-  ),
+  keywordMatch: z.array(keywordMatchSchema),
+  suggestions: suggestionsSchema,
 });
+
+// 不再需要单独的 detailedAnalysisSchema，因为基本 schema 已经包含了所有字段
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -39,6 +98,7 @@ export async function POST(req: Request) {
     // Parse the multipart form data
     const formData = await req.formData();
     const resumeFile = formData.get("resume") as File;
+    const fileId = formData.get("fileId") as string;
     const jobTitle = formData.get("jobTitle") as string;
     const company = formData.get("company") as string;
     const location = formData.get("location") as string;
@@ -88,6 +148,22 @@ export async function POST(req: Request) {
         Analyze the resume for its overall quality, content, format, and ATS compatibility. 
         Provide scores on a scale of 0-100 for each category and an overall score.
         Also provide specific strengths and improvement suggestions.
+        
+        Additionally, generate specific optimization suggestions in the following categories:
+        
+        1. Content: Suggest improvements to the resume content, including professional summary, achievements, and descriptions.
+        2. Keywords: Suggest industry-specific keywords to add, with information on which ones are already present.
+        3. Format: Suggest improvements to the resume format, including section headings, bullet points, and date formats.
+        4. Custom: Any other custom suggestions that would improve the resume.
+        
+        For each suggestion, provide a title, description, and before/after examples where applicable.
+        For keyword suggestions, include an array of relevant keywords with information on whether they're found in the resume and how many times.
+        
+        IMPORTANT: The suggestions should be structured as an object with four properties: content, keywords, format, and custom. Each property should be an array of suggestion objects.
+        
+        CRITICAL: Every suggestion object MUST include an example object with both 'before' and 'after' fields, even for keyword suggestions. If there's no specific before/after example for keywords, use empty strings or placeholder text.
+        
+        Also include a keywordMatch array with important industry keywords, whether they were found in the resume, and context if found. For a basic analysis without a job description, use general industry keywords relevant to the resume.
       `;
       schema = basicAnalysisSchema;
     } else {
@@ -113,6 +189,24 @@ export async function POST(req: Request) {
         
         Also provide specific strengths and improvement suggestions to better match this job.
         Include a keywordMatch array with important keywords from the job description, whether they were found in the resume, and context if found.
+        
+        Additionally, generate specific optimization suggestions in the following categories:
+        
+        1. Content: Suggest improvements to the resume content to better match the job description, including professional summary, achievements, and descriptions.
+        2. Keywords: Suggest job-specific keywords to add from the job description, with information on which ones are already present.
+        3. Format: Suggest improvements to the resume format, including section headings, bullet points, and date formats.
+        4. Custom: Any other custom suggestions that would improve the resume's match to this specific job.
+        
+        For each suggestion, provide a title, description, and before/after examples where applicable.
+        For keyword suggestions, include an array of relevant keywords with information on whether they're found in the resume and how many times.
+        
+        Make sure the suggestions are tailored to help the candidate better match this specific job opportunity.
+        
+        IMPORTANT: The suggestions should be structured as an object with four properties: content, keywords, format, and custom. Each property should be an array of suggestion objects.
+        
+        CRITICAL: Every suggestion object MUST include an example object with both 'before' and 'after' fields, even for keyword suggestions. If there's no specific before/after example for keywords, use empty strings or placeholder text like "No specific example" or provide a generic example of how to incorporate the keywords.
+        
+        CRITICAL: You MUST include a keywordMatch array with important keywords from the job description, whether they were found in the resume, and context if found.
       `;
       schema = detailedAnalysisSchema;
     }
@@ -120,15 +214,31 @@ export async function POST(req: Request) {
     // 使用generateObject生成符合schema的分析结果
     const result = await generateObject({
       model: openai("gpt-4o-mini"),
-      schema: schema,
+      schema: schema, // 使用统一的 schema
       prompt: prompt,
       temperature: 0.3,
     });
 
     console.log("--result", result.object);
 
-    // 返回分析结果
-    return NextResponse.json(result.object);
+    // 保存分析结果到数据库
+    const saveResult = await saveResumeAnalysis({
+      fileName: resumeFile.name,
+      fileId: fileId || undefined,
+      analysisType: analysisType,
+      result: result.object, // 直接存储完整的分析结果
+      jobTitle: jobTitle || undefined,
+      company: company || undefined,
+      location: location || undefined,
+      description: description || undefined,
+    });
+
+    // 返回分析结果和保存状态
+    return NextResponse.json({
+      ...result.object,
+      saved: saveResult.success,
+      analysisId: saveResult.analysisId,
+    });
   } catch (error) {
     console.error("Error analyzing resume:", error);
     return NextResponse.json(
